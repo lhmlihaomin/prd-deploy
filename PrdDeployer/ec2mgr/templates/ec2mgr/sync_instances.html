@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Sync Instances{% endblock %}
+
+{% block body %}
+    {% for r in ret %}
+    <h5>{{r.module}}</h5>
+    <ul>
+        {% for i in r.instances %}
+        <li>{{i}}</li>
+        {% endfor %}
+    </ul>
+    {% endfor %}
+{% endblock %}

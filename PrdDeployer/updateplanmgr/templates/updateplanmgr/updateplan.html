@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% block title %}UpdatePlan{% endblock %}
+{% block body %}
+<h1>{{plan.project_name}}</h1>
+<h3>{{plan.project_code}} -- {{plan.project_leader}}</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Step</th>
+            <th>Region</th>
+            <th>Module</th>
+            <th>New Version</th>
+            <th>New Instances</th>
+            <th>Old Version</th>
+            <th>Old Instances</th>
+            <th>Load Balancers</th>
+            <th>ELB State</th>
+            <th>Load Balancer Actions</th>
+            <th>Mark as Finished</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for step in steps %}
+        <tr>
+            <td>{{step.sequence}}</td>
+            <td>{{step.module.region.full_name}}</td>
+            <td>{{step.module.display_name}}</td>
+            <td>{{step.module.current_version}}</td>
+            <td>
+                <span>{{step.module.healthy_instance_count}}/{{step.module.instance_count}}</span>
+                <button onclick="run_module_ec2({{step.id}})">Run</button>
+            </td>
+            <td>{{step.module.previous_version}}</td>
+            <td>
+                <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
+                <button onclick="stop_module_previous_ec2({{step.id}})">Stop</button>
+            </td>
+            <td>{{step.module.load_balancer_names}}</td>
+            <td>
+                <span id="spanElbState"></span>
+                <button onclick="check_module_elb_health({{step.id}})">Check</button>
+            </td>
+            <td>
+                {% if step.module.load_balancer_names %}
+                <button onclick="reg_module_elb({{step.id}})">Register New</button>
+                <button onclick="dereg_module_elb({{step.id}})">Deregister Old</button>
+                {% endif %}
+            </td>
+            <td>
+                <button onclick="finish_step({{step.id}})">Mark</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+{% block page_js %}
+<script type="text/javascript">
+function run_module_ec2(step_id) {
+    if (!confirm("Run new instances?")) return;
+    $.ajax({
+        url: '/update/ajax/run_module_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(instance_ids) {
+            console.log(instance_ids);
+            add_module_ec2_tags(step_id, instance_ids);
+        }
+    });
+}
+
+function add_module_ec2_tags(step_id, instance_ids) {
+    if (instance_ids.length == 0)
+        return;
+    $.ajax({
+        url: '/update/ajax/add_module_ec2_tags/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id,
+            instance_ids: instance_ids
+        },
+        success: function(data) {
+            console.log(data);
+            add_module_volume_tags(step_id, instance_ids);
+        }
+    });
+}
+
+function add_module_volume_tags(step_id, instance_ids) {
+    if (instance_ids.length == 0)
+        return;
+    $.ajax({
+        url: '/update/ajax/add_module_volume_tags/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id,
+            instance_ids: instance_ids
+        },
+        success: function(data) {
+            console.log(data);
+        }
+    })
+}
+
+
+function stop_module_ec2(step_id) {
+    if (!confirm("Stop these instances?")) return;
+    $.ajax({
+        url: '/update/ajax/stop_module_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            console.log(data);
+        }
+    })
+}
+
+
+function stop_module_previous_ec2(step_id) {
+    if (!confirm("Stop old instances?")) return;
+    $.ajax({
+        url: '/update/ajax/stop_module_previous_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            console.log(data);
+        }
+    })
+}
+
+
+function reg_module_elb(step_id) {
+    if (!confirm("Register new instances?")) return;
+    $.ajax({
+        url: '/update/ajax/reg_module_elb/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            console.log(data);
+        }
+    })
+}
+
+
+function dereg_module_elb(step_id) {
+    if (!confirm("Deregister old instances?")) return;
+    $.ajax({
+        url: '/update/ajax/dereg_module_elb/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            console.log(data);
+        }
+    })
+}
+
+
+function finish_step(step_id) {
+    if (!confirm("Finish this step?")) return;
+    $.ajax({
+        url: '/update/ajax/finish_step/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(result) {
+            if (result) {
+                console.log("Step finished");
+            } else {
+                alert("Cannot finish step now. EC2 or ELB operations not finished.");
+            }
+        }
+    })    
+}
+
+
+function check_module_elb_health(step_id) {
+    $.ajax({
+        url: "/update/ajax/check_module_elb_health/",
+        method: "post",
+        dataType: "json",
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            if (data) {
+                $('#spanElbState').html(
+                    data[0]+"/"+data[1]+" InService"
+                );
+            }
+        }
+    })
+}
+</script>
+{% endblock %}
