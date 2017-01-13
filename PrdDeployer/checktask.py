@@ -4,10 +4,16 @@ Hello!
 
 import json
 import os
+import pytz
+import datetime
 
 from fabric.api import *
 from ec2mgr.models import EC2Instance
 
+# define timezone:
+TZ = "Asia/Chongqing"
+# new instances should enter service within (seconds):
+READY_THRESHOLD = 300
 
 class CheckTaskException(Exception):
     pass
@@ -32,6 +38,8 @@ class EC2CheckTask:
             self.is_new_instance = True
         else:
             self.is_new_instance = False
+
+        self.timezone = pytz.timezone(TZ)
 
 
     def set_fabric_env(self):
@@ -149,8 +157,14 @@ class EC2CheckTask:
         self.perform_check("log_script")
         ## check open-falcon agent:
         self.perform_check("falcon_agent")
+        # record time:
+        now = self.timezone.localize(datetime.datetime.now())
         # if host is a new ec2instance and service down:
         if self.is_new_instance:
+            dt = now - self.ec2instance.created_at
+            if dt.seconds < READY_THRESHOLD:
+                if not self.ec2instance.service_ok:
+                    self.ec2instance.set_not_ready()
         # save results:
         self.ec2instance.save()
         print("STATUS: "+self.ec2instance.service_status)

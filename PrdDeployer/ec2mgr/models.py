@@ -26,3 +26,11 @@ class EC2Instance(models.Model):
         self.running_state = instance.state['Name']
         self.service_status = ""
         self.note = ""
+
+    def service_ok(self):
+        return self.service_status == "ok"
+
+    def set_not_ready(self):
+        self.service_status = "not_ready"
+        self.note = "Instance just started."
+
