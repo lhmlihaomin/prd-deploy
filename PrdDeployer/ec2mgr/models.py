@@ -14,6 +14,8 @@ class EC2Instance(models.Model):
     instance_created = models.BooleanField(default=False)
     instance_tags_added = models.BooleanField(default=False)
     volume_tags_added = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_checked_at = models.DateTimeField(blank=True, null=True)
 
     def load_boto3_instance(self, instance):
         """Get info from a boto3.ec2.Instance"""

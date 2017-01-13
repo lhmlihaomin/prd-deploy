@@ -150,7 +150,7 @@ class EC2CheckTask:
         ## check open-falcon agent:
         self.perform_check("falcon_agent")
         # if host is a new ec2instance and service down:
-
+        if self.is_new_instance:
         # save results:
         self.ec2instance.save()
         print("STATUS: "+self.ec2instance.service_status)
