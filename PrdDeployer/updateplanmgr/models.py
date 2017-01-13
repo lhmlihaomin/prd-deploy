@@ -21,6 +21,9 @@ class Module(models.Model):
     load_balancer_names = models.CharField(max_length=1000)
 
     instances = models.ManyToManyField(EC2Instance)
+    # type of this module. 
+    # available types are: (java, tomcat, other)
+    service_type = models.CharField(max_length=500, default="java")
 
     def to_dict(self):
         return {
