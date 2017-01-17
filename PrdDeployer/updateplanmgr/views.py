@@ -260,6 +260,10 @@ def new_module(request):
         ).count() > 0:
             return HttpResponse("Module already exists.")
         # create module:
+        try:
+            obj = json.loads(configuration)
+        except:
+            return HttpResponse("Bad JSON.")
         module = Module(
             name=name,
             profile=profile,
@@ -267,7 +271,7 @@ def new_module(request):
             current_version=current_version,
             previous_version=previous_version,
             instance_count=instance_count,
-            configuration=configuration,
+            configuration=json.dumps(obj, indent=2),
             load_balancer_names=load_balancer_names
         )
         module.save()

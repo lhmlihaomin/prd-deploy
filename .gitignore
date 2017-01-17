@@ -92,3 +92,5 @@ ENV/
 *.swp
 # SSH keys
 *.pem
+# sqlite3 files
+*.sqlite3
