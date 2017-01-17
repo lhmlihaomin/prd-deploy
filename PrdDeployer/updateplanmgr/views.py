@@ -235,6 +235,55 @@ def new_updateplan(request):
         return render(request, "updateplanmgr/new_updateplan.html", context)
 
 
+@login_required
+def new_module(request):
+    if request.method == "POST":
+        # get form data:
+        name = request.POST.get("name")
+        profile_name = request.POST.get("profile_name")
+        profile = AWSProfile.objects.get(name=profile_name)
+        region_name = request.POST.get("region_name")
+        region = AWSRegion.objects.get(name=region_name)
+
+        current_version = request.POST.get("current_version")
+        previous_version = request.POST.get("previous_version")
+        
+        instance_count = int(request.POST.get("instance_count"))
+        configuration = request.POST.get("configuration")
+        load_balancer_names = request.POST.get("load_balancer_names")
+        # see if it's already there:
+        if Module.objects.filter(
+            profile=profile,
+            region=region,
+            name=name,
+            current_version=current_version
+        ).count() > 0:
+            return HttpResponse("Module already exists.")
+        # create module:
+        module = Module(
+            name=name,
+            profile=profile,
+            region=region,
+            current_version=current_version,
+            previous_version=previous_version,
+            instance_count=instance_count,
+            configuration=configuration,
+            load_balancer_names=load_balancer_names
+        )
+        module.save()
+        module.set_online_version()
+        module.save()
+        return HttpResponseRedirect(reverse('modules', kwargs={'profile_name': profile_name, 'region_name': region_name}))
+
+    profiles = AWSProfile.objects.all()
+    regions = AWSRegion.objects.all()
+    context = {
+        'profiles': profiles,
+        'regions': regions,
+    }
+    return render(request, 'updateplanmgr/new_module.html', context)
+
+
 def v1(request):
     profile = get_object_or_404(AWSProfile, name='cn-alpha')
     region = get_object_or_404(AWSRegion, name='cn-north-1')

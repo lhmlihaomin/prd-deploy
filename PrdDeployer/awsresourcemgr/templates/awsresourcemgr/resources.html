@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Resources in {{profile.name}}:{{region.name}}{% endblock %}
+
+{% block body %}
+    <h1>Resources in {{profile.name}}:{{region.name}}</h1>
+    {%for resources in resource_arr%}
+    <h3>{{resources.0}}</h3>
+        <table>
+        {%for resource in resources.1%}
+        <tr>
+            <td>&quot;{{resource.0}}&quot;, &quot;{{resource.1}}&quot;</td>
+        </tr>
+        {%endfor%}
+        </table>
+    {%endfor%}
+{% endblock %}

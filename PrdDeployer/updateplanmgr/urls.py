@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^edit_module_json/(?P<module_id>\d+)/$', views.edit_module_json, name='edit_module_json'),
     url(r'^updateplan/(?P<plan_id>\d+)/$', views.updateplan, name='updateplan'),
     url(r'^new_updateplan/$', views.new_updateplan, name='new_updateplan'),
+    url(r'^new_module/$', views.new_module, name='new_module'),    
 
     # ajax views:
     url(r'ajax/run_module_ec2/', ajax_views.run_module_ec2, name='ajax.run_module_ec2'),

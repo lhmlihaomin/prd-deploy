@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource, AWSResourceHandler
@@ -81,3 +82,40 @@ def update_resources(request, profile_name, region_name):
         ret.append([resource_type, str(ids_to_add), str(ids_to_del)])
     return render(request, "awsresourcemgr/update_resources.html", locals())
 
+
+@login_required
+def resources(request, profile_name, region_name):
+    resource_types = (
+        "vpc",
+        "image",
+        "key_pair",
+        "instance_profile",
+        "subnet",
+        "security_group",
+        "server_certificate",
+    )
+    profile = AWSProfile.objects.get(name=profile_name)
+    region = AWSRegion.objects.get(name=region_name)
+    context = {}
+    resource_arr = []
+    for resource_type in resource_types:
+        resources = AWSResource.objects.filter(
+            profile=profile,
+            region=region,
+            resource_type=resource_type
+        )
+        print resources.query
+        print(resource_type)
+        print(len(resources))
+        resource_arr.append(
+            [
+                resource_type,
+                [(resource.name, resource.resource_id) for resource in resources]
+            ]
+        )
+    context = {
+        'profile': profile,
+        'region': region,
+        'resource_arr': resource_arr
+    }
+    return render(request, 'awsresourcemgr/resources.html', context)
