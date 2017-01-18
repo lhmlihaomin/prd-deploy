@@ -230,10 +230,13 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 SERVICE_TYPES = {
     "account": "java",
+    "accountweb": "tomcat",
+    "account_accountweb": "java_tomcat",
     "appconnector": "java",
     "appserver": "tomcat",
     "appserverinternal": "tomcat",
     "appservice": "java",
+    "appservice_pushservice": "java_java",
     "assembler": "java",
     "connector": "java",
     "dal": "java",
@@ -255,3 +258,4 @@ SERVICE_TYPES = {
     "vaserver": "tomcat",
     "vaservice": "java",
 }
+
