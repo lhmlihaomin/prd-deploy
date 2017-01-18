@@ -288,11 +288,19 @@ def new_module(request):
     return render(request, 'updateplanmgr/new_module.html', context)
 
 
-def v1(request):
-    profile = get_object_or_404(AWSProfile, name='cn-alpha')
-    region = get_object_or_404(AWSRegion, name='cn-north-1')
-    module_name = "mod1"
-    current_version = "1.0.0"
-    new_version = "1.1.1"
-    module = make_new_version_module(profile, region, module_name, current_version, new_version)
-    return HttpResponse(module.display_name)
+@login_required
+def fix_service_types(request):
+    ret = ""
+    service_types = settings.SERVICE_TYPES
+    for module in Module.objects.all():
+        if service_types.has_key(module.name):
+            if module.service_type != service_types[module.name]:
+                ret += "%s: %s - %s<br/>\r\n"%(module.name, module.service_type, service_types[module.name])
+                module.service_type = service_types[module.name]
+                module.save()
+        else:
+            ret += "%s: service type not found.<br/>\r\n"%(module.name,)
+            module.service_type = ""
+            module.save()
+    return HttpResponse(ret)
+

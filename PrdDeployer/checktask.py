@@ -8,6 +8,7 @@ import pytz
 import datetime
 
 from fabric.api import *
+from fabric.network import disconnect_all
 from ec2mgr.models import EC2Instance
 
 # define timezone:
@@ -26,7 +27,7 @@ class EC2CheckTask:
         self.ec2instance = ec2instance
         self.pem_dir = pem_dir
         self.host_string = "%s@%s"%(
-            ec2instance.username, 
+            ec2instance.username,
             ec2instance.private_ip_address
         )
         self.key_filename = os.path.sep.join([
@@ -57,7 +58,7 @@ class EC2CheckTask:
             raise Exception("Command didn't return 0!")
         return int(r) > 0
 
-    
+
     def check_file_content(self, substr, filepath):
         """check if <filepath> contains <substr>."""
         cmd = "grep '%s' %s|wc -l"%(substr, filepath)
@@ -77,8 +78,8 @@ class EC2CheckTask:
 
     def check_tomcat_service(self):
         statuspath = "/home/ubuntu/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
-            self.module.name, 
-            self.module.name, 
+            self.module.name,
+            self.module.name,
             self.module.version
         )
         statuspath = statuspath + "/status.sh"
@@ -165,9 +166,12 @@ class EC2CheckTask:
             if dt.seconds < READY_THRESHOLD:
                 if not self.ec2instance.service_ok:
                     self.ec2instance.set_not_ready()
+        # update timestamp:
+        self.ec2instance.last_checked_at = now
         # save results:
         self.ec2instance.save()
         print("STATUS: "+self.ec2instance.service_status)
         print("NOTE: \r\n"+self.ec2instance.note)
         print("\r\n")
+        disconnect_all()
 
