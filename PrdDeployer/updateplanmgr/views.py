@@ -28,7 +28,7 @@ def modules(request, profile_name, region_name):
 
     modules = Module.objects.filter(profile=profile, region=region)\
         .order_by("name", "-current_version")
-    
+
     context = {
         'profile': profile,
         'region': region,
@@ -247,7 +247,7 @@ def new_module(request):
 
         current_version = request.POST.get("current_version")
         previous_version = request.POST.get("previous_version")
-        
+
         instance_count = int(request.POST.get("instance_count"))
         configuration = request.POST.get("configuration")
         load_balancer_names = request.POST.get("load_balancer_names")
