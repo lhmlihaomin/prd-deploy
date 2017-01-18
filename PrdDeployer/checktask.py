@@ -34,7 +34,7 @@ class EC2CheckTask:
             self.ec2instance.key_pair + ".pem"
         ])
         self.service_status = self.ec2instance.service_status
-        if self.ec2instance.service_status == "not_ready"
+        if self.ec2instance.service_status == "not_ready":
             self.is_new_instance = True
         else:
             self.is_new_instance = False
