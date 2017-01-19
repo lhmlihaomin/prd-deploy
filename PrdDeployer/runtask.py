@@ -17,7 +17,7 @@ from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
 from ec2mgr.models import EC2Instance
 #from checktask import EC2CheckTask
-from ec2checker import EC2Checker
+from ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
 PROFILE = "global-prd"
@@ -35,6 +35,7 @@ for ec2instance in module.instances.all():
 
 def main():
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
+    runners = []
     for module in Module.objects.filter(profile=profile, region=region, name__in=('dispatcher', 'assembler')):
         if not module.is_online_version:
             continue
@@ -51,8 +52,13 @@ def main():
                                  settings.SERVICE_TYPES,
                                  settings.TIME_ZONE,
                                  300)
-            results = checker.perform_check()
-            checker.save_results(results)
+            runners.append(CheckRunner(checker))
+            #results = checker.perform_check()
+            #checker.save_results(results)
+    for runner in runners:
+        runner.start()
+    for runner in runners:
+        runner.join()
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
 
 

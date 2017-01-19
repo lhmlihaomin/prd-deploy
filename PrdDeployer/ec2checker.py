@@ -8,6 +8,7 @@ import sys
 import pytz
 import datetime
 import django
+import threading
 
 # Initialize django environment:
 sys.path.append(os.path.abspath(__file__))
@@ -177,7 +178,7 @@ class EC2Checker(object):
                 outputs = r.stdout.replace("\r", "").split("\n")
                 for i, output in enumerate(outputs):
                     results.update({
-                        checks[i]: int(output) > 0
+                        checks[i]: int(output) == 1
                     })
             except Exception as ex:
                 print(ex.message)
@@ -207,6 +208,17 @@ class EC2Checker(object):
                 self.ec2instance.service_status = "down"
                 self.ec2instance.note += "%s check failed.\n"%(check_name,)
         self.ec2instance.save()
+
+
+class CheckRunner(threading.Thread):
+    def __init__(self, ec2checker):
+        threading.Thread.__init__(self)
+        self.ec2checker = ec2checker
+
+    def run(self):
+        results = self.ec2checker.perform_check()
+        self.ec2checker.save_results(results)
+        return True
 
 
 def main():
