@@ -21,22 +21,17 @@ from ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
 PROFILE = "global-prd"
-#REGION = "ap-southeast-1"
-REGION = "us-east-1"
+REGION = "ap-southeast-1"
+#REGION = "us-east-1"
 profile = AWSProfile.objects.get(name=PROFILE)
 region = AWSRegion.objects.get(name=REGION)
 
-"""
-module = Module.objects.get(name='mod1', current_version='1.2.1')
-for ec2instance in module.instances.all():
-    task = EC2CheckTask(ec2instance, KEY_FILEPATH)
-    task.set_fabric_env()
-"""
 
 def main():
+    # Record start time:
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
     runners = []
-    for module in Module.objects.filter(profile=profile, region=region, name__in=('dispatcher', 'assembler')):
+    for module in Module.objects.filter(profile=profile, region=region, is_online_version=True):
         if not module.is_online_version:
             continue
         print("========== %s =========="%(module.display_name))
@@ -59,6 +54,7 @@ def main():
         runner.start()
     for runner in runners:
         runner.join()
+    # Record finish time:
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
 
 
