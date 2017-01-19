@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(__file__))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
-
+import fabric
 from fabric.api import *
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
@@ -21,13 +21,19 @@ from ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
 PROFILE = "global-prd"
-REGION = "ap-southeast-1"
+#REGION = "ap-southeast-1"
+#REGION = "eu-west-1"
+REGIONS = (
+    "ap-southeast-1",
+    #"eu-west-1",
+    #"us-east-1"
+)
 #REGION = "us-east-1"
-profile = AWSProfile.objects.get(name=PROFILE)
-region = AWSRegion.objects.get(name=REGION)
 
 
-def main():
+def check_region(profile_name, region_name):
+    profile = AWSProfile.objects.get(name=profile_name)
+    region = AWSRegion.objects.get(name=region_name)
     # Record start time:
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
     runners = []
@@ -36,6 +42,9 @@ def main():
             continue
         print("========== %s =========="%(module.display_name))
         for ec2instance in module.instances.all():
+            if ec2instance.running_state != "running":
+                print("    "+ec2instance.name+" not running. Skipped.")
+                continue
             print("    Instance: "+ec2instance.name)
             print("    IP: "+ec2instance.private_ip_address)
             #task = EC2CheckTask(module, ec2instance, KEY_FILEPATH)
@@ -54,8 +63,16 @@ def main():
         runner.start()
     for runner in runners:
         runner.join()
+    print(fabric.state.connections)
+    fabric.network.disconnect_all()
+
     # Record finish time:
     print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
+
+
+def main():
+    for region_name in REGIONS:
+        check_region(PROFILE, region_name)
 
 
 if __name__ == "__main__":

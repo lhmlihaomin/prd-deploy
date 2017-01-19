@@ -66,8 +66,9 @@ def sync_instances_ex(request, profile_name, region_name):
         names = get_instance_names(instances)
         for instance in instances:
             if instance.state['Name'] == 'running':
-                if not module.is_online_version:
-                    module.set_online_version()
+                #if not module.is_online_version:
+                #    module.set_online_version()
+                module.set_online_version()
             try:
                 ec2instance = EC2Instance.objects.get(instance_id=instance.id)
                 ec2instance.name = get_resource_name(instance)

@@ -1,5 +1,12 @@
 """
 A class to check EC2 instances with differennt types of service.
+TODO:
+1. update instance running states before doing anything else.
+   (will require calling boto3 methods)
+2. add new instance specific checks:
+    a. ntp server configuration;
+    b. unexpected crontab shutdown;
+3. less intense ssh checks for healthy instances (?)
 """
 
 import json
