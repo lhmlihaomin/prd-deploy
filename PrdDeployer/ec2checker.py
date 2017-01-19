@@ -19,8 +19,11 @@ from ec2mgr.models import EC2Instance
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
 
-from django.conf import settings
+from django.conf import settings as djconf
 
+
+class EC2CheckerException(Exception):
+    pass
 
 
 class EC2Checker(object):
@@ -44,6 +47,7 @@ class EC2Checker(object):
             self.is_new_instance = False
 
         self.timezone = pytz.timezone(tzname)
+        self.ready_threshold = ready_threshold
 
         self.service_checks = {
             'java': (
@@ -162,20 +166,47 @@ class EC2Checker(object):
         return (checks, cmds)
 
     def perform_check(self):
+        results = {}
         checks, cmds = self.assemble_check_cmd()
         print(json.dumps(checks, indent=2))
         cmd = ";".join(cmds)
         self.set_fabric_env()
-        r = run(cmd)
-        outputs = r.stdout.replace("\r", "").split("\n")
-        results = {}
-        for i, output in enumerate(outputs):
-            results.update({
-                checks[i]: int(output) > 0
-            })
+        with settings(abort_exception=EC2CheckerException):
+            try:
+                r = run(cmd)
+                outputs = r.stdout.replace("\r", "").split("\n")
+                for i, output in enumerate(outputs):
+                    results.update({
+                        checks[i]: int(output) > 0
+                    })
+            except Exception as ex:
+                print(ex.message)
+                for check_name in checks:
+                    results.update({
+                        check_name: False
+                    })
+                return results
         return results
 
-
+    def save_results(self, results):
+        self.ec2instance.service_status = "ok"
+        self.ec2instance.note = ""
+        # update last check time:
+        now = self.timezone.localize(datetime.datetime.now())
+        self.ec2instance.last_checked_at = now
+        for check_name in results.keys():
+            if not results[check_name]:
+                # some check failed:
+                if self.is_new_instance:
+                    # if it's just started, mark as not_ready:
+                    dt = now - self.ec2instance.created_at
+                    if dt.seconds < self.ready_threshold:
+                        self.ec2instance.set_not_ready()
+                        break
+                # otherwise mark as down:
+                self.ec2instance.service_status = "down"
+                self.ec2instance.note += "%s check failed.\n"%(check_name,)
+        self.ec2instance.save()
 
 
 def main():
@@ -186,8 +217,8 @@ def main():
         module,
         ec2instance,
         "/home/ubuntu/pem",
-        settings.SERVICE_TYPES,
-        settings.TIME_ZONE,
+        djconf.SERVICE_TYPES,
+        djconf.TIME_ZONE,
         300
     )
     #checks, cmds = checker.assemble_check_cmd()
