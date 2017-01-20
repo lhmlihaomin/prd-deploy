@@ -25,8 +25,8 @@ PROFILE = "global-prd"
 #REGION = "eu-west-1"
 REGIONS = (
     "ap-southeast-1",
-    #"eu-west-1",
-    #"us-east-1"
+    "eu-west-1",
+    "us-east-1"
 )
 #REGION = "us-east-1"
 
