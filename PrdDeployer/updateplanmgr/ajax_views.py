@@ -29,8 +29,8 @@ def JSONResponse(obj):
 @login_required
 def run_module_ec2(request):
     """
-    Run EC2 instances for an UpdateStep. The number of instances to run is 
-    determined by (instance_count - healthy_instance_count) of that 
+    Run EC2 instances for an UpdateStep. The number of instances to run is
+    determined by (instance_count - healthy_instance_count) of that
     module in the step.
     """
     # read request and models:
@@ -59,7 +59,8 @@ def run_module_ec2(request):
                 note="Instance just started.",
                 instance_created=True,
                 instance_tags_added=False,
-                volume_tags_added=False
+                volume_tags_added=False,
+                vpc_id=instance.vpc_id
             )
             ec2instance.save()
             module.instances.add(ec2instance)
@@ -117,7 +118,7 @@ def add_module_volume_tags(request):
     except Exception as ex:
         return HttpResponse(ex.message, status=500)
     return JSONResponse(result)
-    
+
 
 def stop_module_ec2_instances(ec2res, module):
     ret = {}
@@ -193,7 +194,7 @@ def reg_module_elb(request):
             ret.update({LoadBalancerName: False})
     return JSONResponse(ret)
 
-    
+
 @login_required
 def dereg_module_elb(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
@@ -220,7 +221,7 @@ def dereg_module_elb(request):
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
     return JSONResponse(ret)
-    
+
 
 @login_required
 def finish_step(request):
@@ -269,4 +270,4 @@ def check_module_elb_health(request):
             logger.error(ex.message)
             return JSONResponse(False)
     return JSONResponse([healthy_count, module.instance_count])
-    
+

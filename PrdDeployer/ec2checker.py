@@ -71,6 +71,10 @@ class EC2Checker(object):
             'logtransfer',
             'falcon_agent',
         )
+        self.newinstance_checks = (
+            'ntp_server',
+            'crontab_shutdown',
+        )
 
     def set_fabric_env(self):
         """initialize fabric 'env' variable for execution"""

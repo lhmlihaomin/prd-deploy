@@ -12,9 +12,9 @@ class AWSResource(models.Model):
     resource_id = models.CharField(max_length=500)
     resource_type = models.CharField(max_length=100)
     arn = models.CharField(max_length=500, default=None, blank=True, null=True)
-    parent = models.ForeignKey('self', 
+    parent = models.ForeignKey('self',
                                on_delete=models.CASCADE,
-                               default=None, 
+                               default=None,
                                null=True,
                                blank=True)
 
@@ -165,3 +165,9 @@ class AWSResourceHandler(object):
         self.update_subnets()
         self.update_security_groups()
         self.update_server_certificates()
+
+
+class NTPServerDefinition(models.Model):
+    vpc_id = models.CharField(max_length=500)
+    address = models.CharField(max_length=1000)
+

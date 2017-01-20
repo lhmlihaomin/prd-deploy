@@ -90,3 +90,51 @@ def sync_instances_ex(request, profile_name, region_name):
         })
 
     return render(request, 'ec2mgr/sync_instances.html', {'ret': ret})
+
+
+@login_required
+def sync_vpc_ids(request):
+    ids = {}
+    for module in Module.objects.all():
+        pid = module.profile.name
+        rid = module.region.name
+        if ids.has_key(pid):
+            if ids[pid].has_key(rid):
+                pass
+            else:
+                ids[pid].update({
+                    rid: []
+                })
+        else:
+            ids.update({
+                pid: {
+                    rid: []
+                }
+            })
+        for instance in module.instances.all():
+            #print("Appending %s to %s:%s"%(instance.instance_id, pid, rid))
+            ids[pid][rid].append(instance.instance_id)
+
+    for pid in ids.keys():
+        for rid in ids[pid].keys():
+            instance_ids = ids[pid][rid]
+            if 'e' in locals():
+                del e
+            if 's' in locals():
+                del s
+            s = boto3.Session(profile_name=pid, region_name=rid)
+            e = s.resource('ec2')
+            #for instance in e.instances.filter(InstanceIds=instance_ids):
+                #print instance.vpc_id
+            for instance_id in instance_ids:
+                try:
+                    instance = e.Instance(instance_id)
+                    vpc_id = instance.vpc_id
+                    print vpc_id
+                    ec2instance = EC2Instance.objects.get(instance_id=instance_id)
+                    ec2instance.vpc_id = vpc_id
+                    ec2instance.save()
+                except Exception as ex:
+                    print ex.message
+                    #raise ex
+                    #print("%s:%s Instance %s does not exist."%(pid, rid, instance_id))

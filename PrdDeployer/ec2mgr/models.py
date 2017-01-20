@@ -17,6 +17,8 @@ class EC2Instance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_checked_at = models.DateTimeField(blank=True, null=True)
 
+    vpc_id = models.CharField(max_length=500, default="")
+
     def load_boto3_instance(self, instance):
         """Get info from a boto3.ec2.Instance"""
         self.name = get_resource_name(instance)
@@ -26,6 +28,7 @@ class EC2Instance(models.Model):
         self.running_state = instance.state['Name']
         self.service_status = ""
         self.note = ""
+        self.vpc_id = instance.vpc_id
 
     def service_ok(self):
         return self.service_status == "ok"
