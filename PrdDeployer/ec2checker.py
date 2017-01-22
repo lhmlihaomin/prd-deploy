@@ -195,7 +195,9 @@ class EC2Checker(object):
             if self.service_types.has_key(module_name):
                 service_type = self.service_types[module_name]
             else:
-                continue
+                #continue
+                # skip instances with unknown services:
+                return ([], [])
             mod_checks, mod_cmds = self.assemble_module_cmd(module_name, version)
             checks += mod_checks
             cmds += mod_cmds
@@ -204,6 +206,8 @@ class EC2Checker(object):
     def perform_check(self):
         results = {}
         checks, cmds = self.assemble_check_cmd()
+        if len(checks) == 0:
+            return results
         print(json.dumps(checks, indent=2))
         cmd = ";".join(cmds)
         self.set_fabric_env()
@@ -225,6 +229,11 @@ class EC2Checker(object):
         return results
 
     def save_results(self, results):
+        if len(results.keys()) == 0:
+            self.ec2instance.service_status = "N/A"
+            self.ec2instance.note = "Unknown service. No checks run."
+            self.ec2instance.save()
+            return
         self.ec2instance.service_status = "ok"
         self.ec2instance.note = ""
         # update last check time:
