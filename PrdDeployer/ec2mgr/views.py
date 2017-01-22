@@ -138,3 +138,47 @@ def sync_vpc_ids(request):
                     print ex.message
                     #raise ex
                     #print("%s:%s Instance %s does not exist."%(pid, rid, instance_id))
+
+
+@login_required
+def instances(request):
+    profile_name = request.GET.get('profile_name')
+    region_name = request.GET.get('region_name')
+    module_name = request.GET.get('module')
+    online_version = request.GET.get('online')
+    #version = request.GET.get('version')
+
+    if profile_name is None:
+        return HttpResponse("No profile.")
+    if region_name is None:
+        return HttpResponse("No region.")
+    if online_version is not None:
+        online_version = (online_version.lower() == "true")
+    print(repr(online_version))
+
+    profile = AWSProfile.objects.get(name=profile_name)
+    region = AWSRegion.objects.get(name=region_name)
+    if module_name is None:
+        modules = Module.objects.filter(
+            profile=profile,
+            region=region,
+            is_online_version=online_version
+        )
+    else:
+        modules = Module.objects.filter(
+            profile=profile,
+            region=region,
+            name=module_name,
+            is_online_version=online_version
+        )
+    module_names = []
+    module_instances = []
+    for module in modules:
+        module_names.append(module.display_name)
+        module_instances.append(module.instances)
+    context = {
+        'modules': modules,
+        'module_names': module_names,
+        'module_instances': module_instances
+    }
+    return render(request, 'ec2mgr/instances.html', context=context)

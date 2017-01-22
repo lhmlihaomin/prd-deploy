@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}List Of Instances{% endblock %}
+
+{% block body %}
+    {%for module in modules%}
+    <h5>{{module.display_name}}</h5>
+    <table>
+        <thead>
+            <tr>
+                <th>Instance Id</th>
+                <th>Name</th>
+                <th>Running State</th>
+                <th>Service Status</th>
+                <th>Private IP Address</th>
+                <th>Key Pair</th>                
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+        {%for instance in module.instances.all%}
+        <tr>
+            <td>{{instance.instance_id}}</td>
+            <td>{{instance.name}}</td>
+            <td>{{instance.running_state}}</td>
+            <td>{{instance.service_status}}</td>
+            <td>{{instance.private_ip_address}}</td>
+            <td>{{instance.key_pair}}</td>
+            <td><pre>{{instance.note}}</pre></td>
+        </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+    {%endfor%}
+{% endblock %}
