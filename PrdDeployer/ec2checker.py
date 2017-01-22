@@ -26,6 +26,7 @@ from fabric.api import *
 from ec2mgr.models import EC2Instance
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
+from awsresourcemgr.models import NTPServerDefinition
 
 from django.conf import settings as djconf
 
@@ -50,9 +51,9 @@ class EC2Checker(object):
         ])
         self.service_status = self.ec2instance.service_status
         if self.ec2instance.service_status == "not_ready":
-            self.is_new_instance = True
+            self.is_newinstance = True
         else:
-            self.is_new_instance = False
+            self.is_newinstance = False
 
         self.timezone = pytz.timezone(tzname)
         self.ready_threshold = ready_threshold
@@ -133,6 +134,15 @@ class EC2Checker(object):
         cmd = "ps -ef|grep 'falcon-agent'|grep -v grep|wc -l"
         return cmd
 
+    def cmd_ntp_server(self):
+        ntpd = NTPServerDefinition.objects.get(vpc_id=self.ec2instance.vpc_id)
+        cmd = "grep -e '^server %s'|wc -l"%(ntpd.address,)
+        return cmd
+
+    def cmd_crontab_shutdown(self):
+        cmd = 'echo "$((`crontab -l|grep shutdown|wc -l`+1))"'
+        return cmd
+
 
     def assemble_generic_cmd(self):
         checks = []
@@ -155,11 +165,22 @@ class EC2Checker(object):
                     cmds.append(check_func(module_name, version))
         return (checks, cmds)
 
-
+    def assemble_newinstance_cmd(self):
+        checks = []
+        cmds = []
+        for check_name in self.newinstance_checks:
+            check_func = getattr(self, 'cmd_'+check_name)
+            checks.append(check_name)
+            cmds.append(check_func())
+        return (checks, cmds)
 
     def assemble_check_cmd(self):
         checks = []
         cmds = []
+        if self.is_newinstance:
+            newinstance_checks, newinstance_cmds = self.assemble_newinstance_cmd()
+            checks += newinstance_cmds
+            cmds += newinstance_cmds
         generic_checks, generic_cmds = self.assemble_generic_cmd()
         checks += generic_checks
         cmds += generic_cmds
@@ -212,7 +233,7 @@ class EC2Checker(object):
         for check_name in results.keys():
             if not results[check_name]:
                 # some check failed:
-                if self.is_new_instance:
+                if self.is_newinstance:
                     # if it's just started, mark as not_ready:
                     dt = now - self.ec2instance.created_at
                     if dt.seconds < self.ready_threshold:
