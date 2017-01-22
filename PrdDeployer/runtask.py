@@ -5,6 +5,10 @@ import datetime
 import json
 
 KEY_FILEPATH = "/home/ubuntu/prd-deploy/PrdDeployer/pem/"
+LOG_FILE = "/home/ubuntu/ec2checker.log"
+#timestamp = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H-%M-%S")
+#logfile = open(LOG_FILE%(timestamp,), 'a')
+logfile = open(LOG_FILE, 'a')
 
 # Initialize django environment:
 sys.path.append(os.path.abspath(__file__))
@@ -34,8 +38,6 @@ REGIONS = (
 def check_region(profile_name, region_name):
     profile = AWSProfile.objects.get(name=profile_name)
     region = AWSRegion.objects.get(name=region_name)
-    # Record start time:
-    print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
     runners = []
     for module in Module.objects.filter(profile=profile, region=region, is_online_version=True):
         if not module.is_online_version:
@@ -63,16 +65,17 @@ def check_region(profile_name, region_name):
         runner.start()
     for runner in runners:
         runner.join()
-    print(fabric.state.connections)
     fabric.network.disconnect_all()
-
-    # Record finish time:
-    print(datetime.datetime.strftime(datetime.datetime.now(),"%H%M%S"))
 
 
 def main():
+    logfile.write("started: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
+    logfile.write("\n")
     for region_name in REGIONS:
         check_region(PROFILE, region_name)
+    logfile.write("finished: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
+    logfile.write("\n")
+    logfile.close()
 
 
 if __name__ == "__main__":
