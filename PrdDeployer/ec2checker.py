@@ -104,7 +104,10 @@ class EC2Checker(object):
         return cmd
 
     def cmd_nohup_output(self, name, version):
-        substr = "cloud-%s service started"%(name,)
+        if name == "connector":
+            substr = "service start success"
+        else:
+            substr = "cloud-%s service started"%(name,)
         filepath = os.path.sep.join([
             "~",
             "cloud-"+name,
