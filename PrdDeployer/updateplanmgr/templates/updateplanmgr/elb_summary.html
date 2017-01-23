@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Update Summary: Elastic Load Balancers{% endblock %}
+{% block body %}
+    <h1>{{plan.project_name}}</h1>
+    {% for elb_state in elb_states %}
+    <h3>{{ elb_state.elb_name }}</h3>
+    <hr />
+        {% for instance_state in elb_state.instance_states %}
+        <li>{{ instance_state.instance_id }}|{{ instance_state.state }}</li>
+        {% endfor %}
+    {% endfor %}

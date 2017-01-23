@@ -307,7 +307,7 @@ def fix_service_types(request):
 
 @login_required
 def instances_summary(request, plan_id):
-    # TODO: list all instances launched at this updateplan.
+    """list all instances relevant to this updateplan."""
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
     context = {
@@ -337,5 +337,26 @@ def instances_summary(request, plan_id):
 
 @login_required
 def elb_summary(request, plan_id):
-    # TODO: list ELB service status of this updateplan
-    pass
+    """List relevant ELB service status."""
+    plan = get_object_or_404(UpdatePlan, pk=plan_id)
+    steps = plan.steps.order_by('sequence')
+    context = {
+        'plan': plan,
+        'steps': []
+    }
+    load_balancer_names = []
+    for step in steps:
+        module = step.module
+        module_name = module.display_name
+        module_elb_names = [
+            x.strip() for x in module.load_balancer_names.split(",")
+        ]
+        if module_elb_names[0] != "":
+            load_balancer_names += module_elb_names
+
+    for elb_name in load_balancer_n
+            s = module.get_session(region)
+            c = s.client('elb')
+            resp = c.describe_load_balancers(LoadBalancerNames=load_balancer_names)
+            descs = resp['LoadBalancerDescriptions']
+            for load_balancer
