@@ -4,6 +4,8 @@
     <h1>{{plan.project_name}}</h1>
 {% for step in steps %}
 <div style="width:90%;margin-left:auto;margin-right:auto;margin-bottom:20px;">
+    <h3>Step {{ step.sequence }}</h3>
+    <hr />
     <div style="width:49%;display:inline-block;">
         <h5>{{ step.module_name }}</h5>
         <table style="width:100%">

@@ -35,20 +35,29 @@ REGIONS = (
 #REGION = "us-east-1"
 
 
-def check_region(profile_name, region_name):
+def check_region(profile_name, region_name, check_all=False):
     profile = AWSProfile.objects.get(name=profile_name)
     region = AWSRegion.objects.get(name=region_name)
     runners = []
-    for module in Module.objects.filter(profile=profile, region=region, is_online_version=True):
-        if not module.is_online_version:
-            continue
-        print("========== %s =========="%(module.display_name))
+    if check_all:
+        filters = {
+            'profile': profile,
+            'region': region
+        }
+    else:
+        filters = {
+            'profile': profile,
+            'region': region,
+            'is_online_version': True
+        }
+    for module in Module.objects.filter(**filters):
+        #print("========== %s =========="%(module.display_name))
         for ec2instance in module.instances.all():
             if ec2instance.running_state != "running":
-                print("    "+ec2instance.name+" not running. Skipped.")
+                #print("    "+ec2instance.name+" not running. Skipped.")
                 continue
-            print("    Instance: "+ec2instance.name)
-            print("    IP: "+ec2instance.private_ip_address)
+            #print("    Instance: "+ec2instance.name)
+            #print("    IP: "+ec2instance.private_ip_address)
             #task = EC2CheckTask(module, ec2instance, KEY_FILEPATH)
             #task.set_fabric_env()
             #task.check_instance()
@@ -69,10 +78,14 @@ def check_region(profile_name, region_name):
 
 
 def main():
+    check_all=False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "-a":
+            check_all = True
     logfile.write("started: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
     logfile.write("\n")
     for region_name in REGIONS:
-        check_region(PROFILE, region_name)
+        check_region(PROFILE, region_name, check_all=check_all)
     logfile.write("finished: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
     logfile.write("\n")
     logfile.close()

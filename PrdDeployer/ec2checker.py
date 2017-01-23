@@ -208,10 +208,9 @@ class EC2Checker(object):
         checks, cmds = self.assemble_check_cmd()
         if len(checks) == 0:
             return results
-        print(json.dumps(checks, indent=2))
         cmd = ";".join(cmds)
         self.set_fabric_env()
-        with settings(abort_exception=EC2CheckerException):
+        with settings(abort_exception=EC2CheckerException), hide('running', 'stdout', 'stderr'):
             try:
                 r = run(cmd)
                 outputs = r.stdout.replace("\r", "").split("\n")
@@ -220,11 +219,26 @@ class EC2Checker(object):
                         checks[i]: int(output) == 1
                     })
             except Exception as ex:
-                print(ex.message)
+                print("!!! "+ex.message)
                 for check_name in checks:
                     results.update({
                         check_name: False
                     })
+                try:
+                    print("!!! Checking if this instance is terminated.")
+                    s = self.module.profile.get_session(self.module.region)
+                    e = s.resource('ec2')
+                    instance = e.Instance(self.ec2instance.instance_id)
+                    instance.load()
+                    print(instance.vpc_id)
+                    print(instance.key_pair)
+                    self.ec2instance.running_state = instance.state['Name']
+                    print("!!! "+instance.id)
+                except:
+                    print("!!! Cannot describe instance. Instance might have been terminated.")
+                    self.ec2instance.running_state = "Terminated"
+                    self.ec2instance.save()
+                    return {}
                 return results
         return results
 
@@ -263,27 +277,4 @@ class CheckRunner(threading.Thread):
         results = self.ec2checker.perform_check()
         self.ec2checker.save_results(results)
         return True
-
-
-def main():
-    module = Module.objects.get(pk=276)
-    ec2instance = EC2Instance.objects.get(pk=111)
-
-    checker = EC2Checker(
-        module,
-        ec2instance,
-        "/home/ubuntu/pem",
-        djconf.SERVICE_TYPES,
-        djconf.TIME_ZONE,
-        300
-    )
-    #checks, cmds = checker.assemble_check_cmd()
-    #for i in range(len(checks)):
-    #    print("%s: %s"%(checks[i], cmds[i]))
-    r = checker.perform_check()
-    print(json.dumps(r, indent=2))
-
-
-if __name__ == "__main__":
-    main()
 

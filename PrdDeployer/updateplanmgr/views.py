@@ -326,6 +326,7 @@ def instances_summary(request, plan_id):
             prev_module_name = prev_module.display_name
             prev_instances = prev_module.instances.all()
         context['steps'].append({
+            'sequence': step.sequence,
             'module_name': module_name,
             'prev_module_name': prev_module_name,
             'instances': instances,
