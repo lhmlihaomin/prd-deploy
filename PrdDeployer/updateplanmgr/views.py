@@ -13,6 +13,7 @@ import boto3
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource
+from ec2mgr.models import EC2Instance
 from .models import Module, UpdatePlan, UpdateStep
 from boto3helper.ec2 import get_instances_by_filters, \
     get_instance_module_version
@@ -342,21 +343,37 @@ def elb_summary(request, plan_id):
     steps = plan.steps.order_by('sequence')
     context = {
         'plan': plan,
-        'steps': []
+        'elb_states': []
     }
-    load_balancer_names = []
     for step in steps:
         module = step.module
         module_name = module.display_name
         module_elb_names = [
             x.strip() for x in module.load_balancer_names.split(",")
         ]
+        elb_states = []
         if module_elb_names[0] != "":
-            load_balancer_names += module_elb_names
-
-    for elb_name in load_balancer_n
             s = module.get_session(region)
             c = s.client('elb')
-            resp = c.describe_load_balancers(LoadBalancerNames=load_balancer_names)
-            descs = resp['LoadBalancerDescriptions']
-            for load_balancer
+            for elb_name in module_elb_names:
+                instance_states = []
+                resp = c.describe_instance_health(LoadBalancerName=elb_name)
+                for instance_health in r['InstanceStates']:
+                    instance_id = instance_health['InstanceId']
+                    state = instance_health['State']
+                    try:
+                        ec2instance = EC2Instance.objects.get(instance_id=instance_id)
+                        instance_name = ec2instance.name
+                    except:
+                        instance_name = ""
+                    instance_states.append({
+                        'instance_id': instance_id,
+                        'instance_name': instance_name,
+                        'state': state,
+                    })
+                elb_states.append({
+                    'elb_name': elb_name,
+                    'instance_states': instance_states
+                })
+        context['elb_states'] = elb_states
+        return render(request, 'updateplanmgr/elb_summary.html', context=context)
