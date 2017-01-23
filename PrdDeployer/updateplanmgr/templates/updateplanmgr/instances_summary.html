@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Update Summary: Instances{% endblock %}
+{% block body %}
+    <h1>{{plan.project_name}}</h1>
+{% for step in steps %}
+<div style="width:90%;margin-left:auto;margin-right:auto;margin-bottom:20px;">
+    <div style="width:49%;display:inline-block;">
+        <h5>{{ step.module_name }}</h5>
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Id</th>
+                    <th>State</th>
+                    <th>Service</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for instance in step.instances %}
+                <tr>
+                    <td>{{ instance.name }}</td>
+                    <td>{{ instance.instance_id }}</td>
+                    <td>{{ instance.running_state }}</td>
+                    <td>{{ instance.service_status }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="width:49%;display:inline-block;">
+        <h5>{{ step.prev_module_name }}</h5>
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Id</th>
+                    <th>State</th>
+                    <th>Service</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for instance in step.prev_instances %}
+                <tr>
+                    <td>{{ instance.name }}</td>
+                    <td>{{ instance.instance_id }}</td>
+                    <td>{{ instance.running_state }}</td>
+                    <td>{{ instance.service_status }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

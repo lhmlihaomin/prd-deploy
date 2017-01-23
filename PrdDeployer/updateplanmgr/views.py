@@ -304,3 +304,37 @@ def fix_service_types(request):
             module.save()
     return HttpResponse(ret)
 
+
+@login_required
+def instances_summary(request, plan_id):
+    # TODO: list all instances launched at this updateplan.
+    plan = get_object_or_404(UpdatePlan, pk=plan_id)
+    steps = plan.steps.order_by('sequence')
+    context = {
+        'plan': plan,
+        'steps': []
+    }
+    for step in steps:
+        module = step.module
+        module_name = module.display_name
+        prev_module = module.previous_module
+        instances = module.instances.all()
+        if prev_module is None:
+            prev_module_name = ""
+            prev_instances = []
+        else:
+            prev_module_name = prev_module.display_name
+            prev_instances = prev_module.instances.all()
+        context['steps'].append({
+            'module_name': module_name,
+            'prev_module_name': prev_module_name,
+            'instances': instances,
+            'prev_instances': prev_instances
+        })
+    return render(request, 'updateplanmgr/instances_summary.html', context=context)
+
+
+@login_required
+def elb_summary(request, plan_id):
+    # TODO: list ELB service status of this updateplan
+    pass

@@ -49,12 +49,15 @@ class Module(models.Model):
 
     @property
     def previous_module(self):
-        return Module.objects.get(
-            profile=self.profile,
-            region=self.region,
-            name=self.name,
-            current_version=self.previous_version
-        )
+        try:
+            return Module.objects.get(
+                profile=self.profile,
+                region=self.region,
+                name=self.name,
+                current_version=self.previous_version
+            )
+        except:
+            return None
 
     def set_online_version(self):
         """Set self as online_version and any other not."""
