@@ -3,4 +3,5 @@ pytz
 boto3
 fabric
 MySQL-python
+mysqlclient
 
