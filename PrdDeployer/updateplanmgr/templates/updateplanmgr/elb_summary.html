@@ -5,7 +5,19 @@
     {% for elb_state in elb_states %}
     <h3>{{ elb_state.elb_name }}</h3>
     <hr />
+    <table>
+    <thead>
+        <tr><th>Id</th><th>Name</th><th>State</th></tr>
+    </thead>
+    <tbody>
         {% for instance_state in elb_state.instance_states %}
-        <li>{{ instance_state.instance_id }}|{{ instance_state.state }}</li>
+        <tr>
+            <td>{{ instance_state.instance_id }}</td>
+            <td>{{ instance_state.instance_name }}</td>
+            <td>{{ instance_state.state }}</td>
+        </tr>
         {% endfor %}
+    </tbody>
+    </table>
     {% endfor %}
+{% endblock %}

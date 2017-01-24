@@ -345,20 +345,20 @@ def elb_summary(request, plan_id):
         'plan': plan,
         'elb_states': []
     }
+    elb_states = []
     for step in steps:
         module = step.module
         module_name = module.display_name
         module_elb_names = [
             x.strip() for x in module.load_balancer_names.split(",")
         ]
-        elb_states = []
         if module_elb_names[0] != "":
-            s = module.get_session(region)
+            s = module.profile.get_session(module.region)
             c = s.client('elb')
             for elb_name in module_elb_names:
                 instance_states = []
                 resp = c.describe_instance_health(LoadBalancerName=elb_name)
-                for instance_health in r['InstanceStates']:
+                for instance_health in resp['InstanceStates']:
                     instance_id = instance_health['InstanceId']
                     state = instance_health['State']
                     try:
@@ -375,5 +375,5 @@ def elb_summary(request, plan_id):
                     'elb_name': elb_name,
                     'instance_states': instance_states
                 })
-        context['elb_states'] = elb_states
-        return render(request, 'updateplanmgr/elb_summary.html', context=context)
+    context['elb_states'] = elb_states
+    return render(request, 'updateplanmgr/elb_summary.html', context=context)

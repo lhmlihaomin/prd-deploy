@@ -3,6 +3,8 @@
 {% block body %}
 <h1>{{plan.project_name}}</h1>
 <h3>{{plan.project_code}} -- {{plan.project_leader}}</h3>
+<a href="{% url 'instances_summary' plan_id=plan.id %}">Check EC2 Status</a>
+<a href="{% url 'elb_summary' plan_id=plan.id %}">Check ELB Status</a>
 <table>
     <thead>
         <tr>
@@ -188,7 +190,7 @@ function finish_step(step_id) {
                 alert("Cannot finish step now. EC2 or ELB operations not finished.");
             }
         }
-    })    
+    })
 }
 
 
