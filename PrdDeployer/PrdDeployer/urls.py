@@ -25,11 +25,13 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
 
     # updatemgr:
-    url(r'^update/', include(updateplanmgr.urls)),
+    url(r'^$', lambda r: HttpResponseRedirect('update/'), name="home"),
+
+    url(r'^update/', include(updateplanmgr.urls, namespace='updateplanmgr', app_name='updateplanmgr')),
     # awsresourcemgr:
-    url(r'^awsres/', include(awsresourcemgr.urls)),
+    url(r'^awsres/', include(awsresourcemgr.urls, namespace='awsresourcemgr', app_name='awsresourcemgr')),
     # ec2mgr:
-    url(r'^ec2/', include(ec2mgr.urls)),
+    url(r'^ec2/', include(ec2mgr.urls, namespace='ec2mgr', app_name='ec2mgr')),
 
     url(r'accounts/login/', login,
         {'template_name': 'admin/login.html'}),

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Prd Update Home{% endblock %}
+{% block body %}
+
+<h3>Update Plans</h3>
+<a href="{% url 'updateplanmgr:new_updateplan' %}">New Update Plan</a>
+<h3>View Modules:</h3>
+{% for profile in profiles %}
+    <ul>
+    {% for region in profile.regions.all %}
+        <li><a href="{% url 'updateplanmgr:modules' profile_name=profile.name region_name=region.name %}">
+            {{profile.name}}:{{region.name}}
+        </a></li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+
+<h3>View AWS Resources:</h3>
+{% for profile in profiles %}
+<p>{{ profile.name }}</p>
+<ul>
+    {% for region in profile.regions.all %}
+    <li><a href="{% url 'awsresourcemgr:resources' profile_name=profile.name region_name=region.name %}">
+        {{profile.name}}:{{region.name}}
+    </a></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+<h3>Update AWS Resources</h3>
+{% for profile in profiles %}
+<p>{{ profile.name }}</p>
+<ul>
+    {% for region in profile.regions.all %}
+    <li><a href="{% url 'awsresourcemgr:update_resources' profile_name=profile.name region_name=region.name %}">
+        {{profile.name}}:{{region.name}}
+    </a></li>
+    {% endfor %}
+</ul>
+{% endfor %}
+
+<a href=""></a>
+{% endblock %}

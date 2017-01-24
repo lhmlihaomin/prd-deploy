@@ -21,6 +21,16 @@ from boto3helper.tags import to_dict, get_name, get_resource_name
 
 logger = logging.getLogger('common')
 
+
+@login_required
+def index(request):
+    profiles = AWSProfile.objects.all()
+    context = {
+        'profiles': profiles
+    }
+    return render(request, 'updateplanmgr/index.html', context=context)
+
+
 @login_required
 def modules(request, profile_name, region_name):
     profile = get_object_or_404(AWSProfile, name=profile_name)
@@ -44,10 +54,10 @@ def edit_module_json(request, module_id):
     if request.method == "POST":
         action = request.POST.get('submit')
         if action == "Reset":
-            return HttpResponseRedirect(reverse('edit_module_json', args=(module.id,)))
+            return HttpResponseRedirect(reverse('updateplanmgr:edit_module_json', args=(module.id,)))
         elif action == "Cancel":
             return HttpResponseRedirect(reverse(
-                'modules',
+                'updateplanmgr:modules',
                 kwargs={
                     'profile_name': module.profile.name,
                     'region_name': module.region.name
@@ -60,7 +70,7 @@ def edit_module_json(request, module_id):
                 module.configuration = json.dumps(obj, indent=2)
                 module.save()
                 return HttpResponseRedirect(reverse(
-                    'modules',
+                    'updateplanmgr:modules',
                     kwargs={
                         'profile_name': module.profile.name,
                         'region_name': module.region.name
@@ -202,7 +212,7 @@ def new_updateplan(request):
             )
             step.save()
             plan.steps.add(step)
-        return HttpResponseRedirect(reverse('updateplan', args=(plan.id,)))
+        return HttpResponseRedirect(reverse('updateplanmgr:updateplan', args=(plan.id,)))
         return HttpResponse(
             json.dumps(request.POST, indent=2),
             content_type="application/json"
@@ -278,7 +288,7 @@ def new_module(request):
         module.save()
         module.set_online_version()
         module.save()
-        return HttpResponseRedirect(reverse('modules', kwargs={'profile_name': profile_name, 'region_name': region_name}))
+        return HttpResponseRedirect(reverse('updateplanmgr:modules', kwargs={'profile_name': profile_name, 'region_name': region_name}))
 
     profiles = AWSProfile.objects.all()
     regions = AWSRegion.objects.all()

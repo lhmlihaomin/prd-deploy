@@ -6,6 +6,7 @@ from updateplanmgr import ajax_views
 urlpatterns = [
     #url(r'^v1/$', views.v1),
     #url(r'^v2/(?P<profile_name>[a-zA-Z0-9-]+)/(?P<region_name>[a-zA-Z0-9-]+)/$', views.v2),
+    url(r'^$', views.index, name="index"),
     url(r'^modules/(?P<profile_name>[a-zA-Z0-9-]+)/(?P<region_name>[a-zA-Z0-9-]+)/$', views.modules, name='modules'),
     url(r'^edit_module_json/(?P<module_id>\d+)/$', views.edit_module_json, name='edit_module_json'),
     url(r'^updateplan/(?P<plan_id>\d+)/$', views.updateplan, name='updateplan'),

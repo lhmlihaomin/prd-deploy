@@ -37,7 +37,7 @@ th,td{
                     <td>{{module.current_version}}</td>
                     <td>{{module.instance_count}}</td>
                     <td>{{module.load_balancer_names}}</td>
-                    <td><a href="{% url 'edit_module_json' module.id %}">Edit JSON</a></td>
+                    <td><a href="{% url 'updateplanmgr:edit_module_json' module.id %}">Edit JSON</a></td>
                     <td>
                         {% if module.is_online_version %}Yes{% else %}No  <a href="#module_set_primary_{{module.id}}">Set as Primary</a>{% endif %}
                     </td>
