@@ -3,6 +3,7 @@ Definition of urls for PrdDeployer.
 """
 
 from django.conf.urls import include, url
+from django.http import HttpResponseRedirect
 
 import updateplanmgr.urls
 import awsresourcemgr.urls

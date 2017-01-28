@@ -50,11 +50,11 @@ def update_resources(request, profile_name, region_name):
                         .values_list("resource_id", flat=True)\
                         .filter(profile=profile, region=region, resource_type=resource_type_names[resource_type])
         awsresource_ids = list(awsresource_ids)
-        # compare local resources and online resources, 
+        # compare local resources and online resources,
         # add "not-found-in-local" and delete "only-found-in-local":
         ids_to_add = list(set(resource_ids) - set(awsresource_ids))
         ids_to_del = list(set(awsresource_ids) - set(resource_ids))
-        
+
         # add new awsresources:
         for resource_id in ids_to_add:
             resource = resource_dict[resource_id]
@@ -104,9 +104,6 @@ def resources(request, profile_name, region_name):
             region=region,
             resource_type=resource_type
         )
-        print resources.query
-        print(resource_type)
-        print(len(resources))
         resource_arr.append(
             [
                 resource_type,
