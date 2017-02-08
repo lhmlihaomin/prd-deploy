@@ -82,11 +82,11 @@ def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == "-a":
             check_all = True
-    logfile.write("started: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
+    logfile.write("BEGIN: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
     for region_name in REGIONS:
         check_region(PROFILE, region_name, check_all=check_all)
-    logfile.write("finished: "+datetime.datetime.strftime(datetime.datetime.now(),"%H:%M:%S"))
+    logfile.write("END: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
     logfile.close()
 
