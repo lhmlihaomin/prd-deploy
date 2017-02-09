@@ -2,6 +2,6 @@ django==1.10
 pytz
 boto3
 fabric
+# install libmysqlclient-dev with apt before
+# this:
 MySQL-python
-mysqlclient
-
