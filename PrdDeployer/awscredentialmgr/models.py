@@ -7,6 +7,12 @@ class AWSRegion(models.Model):
     full_name = models.CharField(max_length=500)
     tag_name = models.CharField(max_length=500)
 
+    def __str__(self):
+        return self.name
+        
+    def __unicode__(self):
+        return unicode(self.__str__())
+
 
 class AWSProfile(models.Model):
     name = models.CharField(max_length=500)
@@ -15,8 +21,8 @@ class AWSProfile(models.Model):
 
     # These two fields shall always be left empty unless not configured in
     # config file ~/.aws/credentials
-    aws_access_key_id = models.CharField(max_length=500, default="")
-    aws_secret_access_key = models.CharField(max_length=500, default="")
+    aws_access_key_id = models.CharField(max_length=500, default="", blank=True)
+    aws_secret_access_key = models.CharField(max_length=500, default="", blank=True)
 
     def has_region(self, region):
         """Check if region is associated with this profile."""

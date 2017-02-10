@@ -28,6 +28,7 @@ th,td{
                     <th>Load Balancers</th>
                     <th>JSON</th>
                     <th>Is Primary</th>
+                    <th>Service Type</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,6 +42,7 @@ th,td{
                     <td>
                         {% if module.is_online_version %}Yes{% else %}No  <a href="#module_set_primary_{{module.id}}">Set as Primary</a>{% endif %}
                     </td>
+                    <td>{{module.service_type}}</td>
                 </tr>
                 {% endfor %}
             </tbody>

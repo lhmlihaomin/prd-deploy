@@ -91,6 +91,7 @@ ENV/
 # vim swap files
 *.swp
 # SSH keys
+pem/
 *.pem
 # sqlite3 files
 *.sqlite3

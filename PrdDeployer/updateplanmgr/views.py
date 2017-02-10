@@ -262,6 +262,7 @@ def new_module(request):
         instance_count = int(request.POST.get("instance_count"))
         configuration = request.POST.get("configuration")
         load_balancer_names = request.POST.get("load_balancer_names")
+        service_type = request.POST.get("service_type")
         # see if it's already there:
         if Module.objects.filter(
             profile=profile,
@@ -283,7 +284,8 @@ def new_module(request):
             previous_version=previous_version,
             instance_count=instance_count,
             configuration=json.dumps(obj, indent=2),
-            load_balancer_names=load_balancer_names
+            load_balancer_names=load_balancer_names,
+            service_type=service_type
         )
         module.save()
         module.set_online_version()

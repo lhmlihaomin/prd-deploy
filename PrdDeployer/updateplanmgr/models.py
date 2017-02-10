@@ -38,7 +38,7 @@ class Module(models.Model):
     @property
     def display_name(self):
         """Return something like 'prd-appserver-1.2.3-use1'."""
-        return "%s-%s-%s-%s"%(self.profile.env, 
+        return "%s-%s-%s-%s"%(self.environ, 
                               self.name, 
                               self.current_version, 
                               self.region.tag_name)

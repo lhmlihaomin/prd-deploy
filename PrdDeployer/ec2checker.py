@@ -65,6 +65,12 @@ class EC2Checker(object):
             ),
             'tomcat':(
                 'tomcat_service',
+            ),
+            'echo_server': (
+                'echo_server',
+            ),
+            'tomcat_aptget': (
+                'tomcat',
             )
         }
         self.generic_checks = (
@@ -107,6 +113,14 @@ class EC2Checker(object):
         statuspath = statuspath + "/status.sh"
         cmd = "/bin/bash " + statuspath + "|grep 'is running'|wc -l"
         return cmd
+
+    def cmd_echo_server(self, name, version):
+        process_name = 'EchoServer'
+        return self.cmd_process(process_name)
+
+    def cmd_tomcat(self, name, version):
+        process_name = 'tomcat'
+        return self.cmd_process(process_name)
 
     def cmd_nohup_output(self, name, version):
         if name == "connector":

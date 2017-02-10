@@ -4,7 +4,7 @@ import django
 import datetime
 import json
 
-KEY_FILEPATH = "/home/ubuntu/prd-deploy/PrdDeployer/pem/"
+KEY_FILEPATH = "/home/ubuntu/pem/"
 LOG_FILE = "/home/ubuntu/ec2checker.log"
 #timestamp = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H-%M-%S")
 #logfile = open(LOG_FILE%(timestamp,), 'a')
@@ -24,14 +24,16 @@ from ec2mgr.models import EC2Instance
 from ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
-PROFILE = "global-prd"
+#PROFILE = "global-prd"
+PROFILE = "cn-alpha"
 #REGION = "ap-southeast-1"
 #REGION = "eu-west-1"
-REGIONS = (
-    "ap-southeast-1",
-    "eu-west-1",
-    "us-east-1"
-)
+#REGIONS = (
+#    "ap-southeast-1",
+#    "eu-west-1",
+#    "us-east-1"
+#)
+REGIONS = ("cn-north-1",)
 #REGION = "us-east-1"
 
 
@@ -51,13 +53,13 @@ def check_region(profile_name, region_name, check_all=False):
             'is_online_version': True
         }
     for module in Module.objects.filter(**filters):
-        #print("========== %s =========="%(module.display_name))
+        print("========== %s =========="%(module.display_name))
         for ec2instance in module.instances.all():
-            if ec2instance.running_state != "running":
-                #print("    "+ec2instance.name+" not running. Skipped.")
+            if ec2instance.running_state not in ("running", "pending"):
+                print("    "+ec2instance.name+" not running. Skipped.")
                 continue
-            #print("    Instance: "+ec2instance.name)
-            #print("    IP: "+ec2instance.private_ip_address)
+            print("    Instance: "+ec2instance.name)
+            print("    IP: "+ec2instance.private_ip_address)
             #task = EC2CheckTask(module, ec2instance, KEY_FILEPATH)
             #task.set_fabric_env()
             #task.check_instance()

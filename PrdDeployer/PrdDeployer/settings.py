@@ -259,5 +259,8 @@ SERVICE_TYPES = {
     "storage": "tomcat",
     "vaserver": "tomcat",
     "vaservice": "java",
+    # dev test modules:
+    "mod1": "devtest",
+    "mod2": "devtest",
 }
 

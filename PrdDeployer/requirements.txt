@@ -1,7 +1,8 @@
+# install these packages with apt-get before doing pip:
+#    libmysqlclient-dev
+#    python-dev
 django==1.10
 pytz
 boto3
 fabric
-# install libmysqlclient-dev with apt before
-# this:
 MySQL-python
