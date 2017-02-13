@@ -7,6 +7,7 @@ TODO:
     a. ntp server configuration;
     b. unexpected crontab shutdown;
 3. less intense ssh checks for healthy instances (?)
+4. rewrite using paramiko
 """
 
 import json
@@ -150,11 +151,12 @@ class EC2Checker(object):
 
     def cmd_ntp_server(self):
         ntpd = NTPServerDefinition.objects.get(vpc_id=self.ec2instance.vpc_id)
-        cmd = "grep -e '^server %s'|wc -l"%(ntpd.address,)
+        cmd = "grep -e '^server %s' /etc/ntp.conf|wc -l"%(ntpd.address,)
         return cmd
 
     def cmd_crontab_shutdown(self):
-        cmd = 'echo "$((`crontab -l|grep shutdown|wc -l`+1))"'
+        #cmd = 'echo "$((`crontab -l|grep shutdown|wc -l`+1))"'
+        cmd = 'echo 1'
         return cmd
 
 
@@ -162,6 +164,7 @@ class EC2Checker(object):
         checks = []
         cmds = []
         for check_name in self.generic_checks:
+            print("getting cmd "+check_name)
             check_func = getattr(self, 'cmd_'+check_name)
             checks.append(check_name)
             cmds.append(check_func())
@@ -218,11 +221,25 @@ class EC2Checker(object):
         return (checks, cmds)
 
     def perform_check(self):
+        # update instance information if it's in an "unstable" state:
+        if self.ec2instance.running_state in ('pending', 'stopping', 'shutting-down'):
+            try:
+                s = self.module.profile.get_session(self.module.region)
+                e = s.resource('ec2')
+                instance = e.Instance(self.ec2instance.instance_id)
+                self.ec2instance.running_state = instance.state['Name']
+                self.ec2instance.save()
+            except:
+                print("!!! Cannot describe instance. Instance might have been terminated.")
+                self.ec2instance.running_state = "Terminated"
+                self.ec2instance.save()
+                return {}
         results = {}
         checks, cmds = self.assemble_check_cmd()
         if len(checks) == 0:
             return results
         cmd = ";".join(cmds)
+        print(cmd)
         self.set_fabric_env()
         with settings(abort_exception=EC2CheckerException), hide('running', 'stdout', 'stderr'):
             try:

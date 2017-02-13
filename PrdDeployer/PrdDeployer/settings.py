@@ -260,7 +260,7 @@ SERVICE_TYPES = {
     "vaserver": "tomcat",
     "vaservice": "java",
     # dev test modules:
-    "mod1": "devtest",
-    "mod2": "devtest",
+    "echoserver": "echo_server",
+    "tomcataptget": "tomcat_aptget",
 }
 

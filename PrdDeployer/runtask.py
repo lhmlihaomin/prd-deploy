@@ -57,7 +57,6 @@ def check_region(profile_name, region_name, check_all=False):
         for ec2instance in module.instances.all():
             #if ec2instance.running_state not in ("running", "pending"):
             #    print("    "+ec2instance.name+" not running. Skipped.")
-            #    continue
             if ec2instance.service_status != "not_ready":
                 print("    Not a new-born instance. Skipped.")
                 continue
