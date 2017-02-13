@@ -93,7 +93,11 @@ def edit_module_json(request, module_id):
 
 @login_required
 def updateplans(request):
-    pass
+    plans = UpdatePlan.objects.all()
+    context = {
+        'plans': plans
+    }
+    return render(request, 'updateplanmgr/updateplans.html', context)
 
 
 @login_required

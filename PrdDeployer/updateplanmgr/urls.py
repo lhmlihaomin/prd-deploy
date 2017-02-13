@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^$', views.index, name="index"),
     url(r'^modules/(?P<profile_name>[a-zA-Z0-9-]+)/(?P<region_name>[a-zA-Z0-9-]+)/$', views.modules, name='modules'),
     url(r'^edit_module_json/(?P<module_id>\d+)/$', views.edit_module_json, name='edit_module_json'),
+    url(r'^updateplans/$', views.updateplans, name='updateplans'),
     url(r'^updateplan/(?P<plan_id>\d+)/$', views.updateplan, name='updateplan'),
     url(r'^new_updateplan/$', views.new_updateplan, name='new_updateplan'),
     url(r'^new_module/$', views.new_module, name='new_module'),

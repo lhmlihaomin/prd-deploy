@@ -3,6 +3,7 @@
 {% block body %}
 
 <h3>Update Plans</h3>
+<a href="{% url 'updateplanmgr:updateplans' %}">View All Update Plans</a><br/>
 <a href="{% url 'updateplanmgr:new_updateplan' %}">New Update Plan</a>
 <h3>View Modules:</h3>
 {% for profile in profiles %}

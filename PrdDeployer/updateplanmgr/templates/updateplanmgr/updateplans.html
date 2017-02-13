@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Update Plans{% endblock %}
+{% block body %}
+{% for plan in plans %}
+<h3>{{plan.project_code}}</h3>
+<ul>
+    <li>Project: <a href="{% url 'updateplanmgr:updateplan' plan_id=plan.id%}">{{plan.project_name}}</a></li>
+    <li>Leader: {{plan.project_leader}}</li>
+</ul>
+{% endfor %}
+{% endblock %}
