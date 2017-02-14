@@ -228,19 +228,12 @@ def finish_step(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
     module = step.module
     if step.finished:
-        return JSONResponse(False)
-    if step.ec2_finished:
-        if module.load_balancer_names:
-            if step.elb_finished:
-                step.finished = True
-            else:
-                return JSONResponse(False)
-        else:
-            step.finished = True
-    else:
-        return JSONResponse(False)
-    step.save()
-    return JSONResponse(True)
+        return JSONResponse((False, "Step already finished."))
+    result = step.check_finished()
+    if not result[0]:
+        return JSONResponse(result)
+    step.set_finished()
+    return JSONResponse((True, ""))
 
 
 @login_required

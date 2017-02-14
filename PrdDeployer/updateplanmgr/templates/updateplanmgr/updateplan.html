@@ -184,10 +184,11 @@ function finish_step(step_id) {
             step_id: step_id
         },
         success: function(result) {
-            if (result) {
-                console.log("Step finished");
+            if (result[0]) {
+                alert("Step finished.")
+                // TODO disable buttons here
             } else {
-                alert("Cannot finish step now. EC2 or ELB operations not finished.");
+                alert("Cannot finish step: "+result[1])
             }
         }
     })

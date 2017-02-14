@@ -122,6 +122,7 @@ class Module(models.Model):
 
     @property
     def healthy_instance_count(self):
+        """an instance is considered healthy if it's RUNNING AND OK"""
         c = 0
         for ec2instance in self.instances.all():
             if ec2instance.running_state == "running" and \
@@ -140,7 +141,40 @@ class Module(models.Model):
 
     @property
     def launch_count(self):
+        """how many instances are needed to fill the gap"""
         return self.instance_count - self.healthy_instance_count
+
+
+    def check_ec2_status(self):
+        """True healthy count is no less than required count"""
+        if self.healthy_instance_count >= self.instance_count:
+            return True
+        return False
+
+
+    def check_single_elb_status(self, lbname):
+        """True if all ELB instances are of this module and InService"""
+        healthy_instances = self.instances.filter(running_state="running", service_status="ok")
+        instance_ids = [ec2instance.instance_id for ec2instance in healthy_instances]
+        s = self.profile.get_session(self.region)
+        c = s.client('elb')
+        resp = c.describe_instance_health(LoadBalancerName=lbname)
+        states = resp['InstanceStates']
+        for state in states:
+            if state['InstanceId'] not in instance_ids:
+                return False
+            if state['State'] != "InService":
+                return False
+        return True
+
+    def check_elb_status(self):
+        """True if all elb status are all True"""
+        lbnames = self.load_balancer_names.split(",")
+        lbnames = [lbname.strip() for lbname in lbnames]
+        for lbname in lbnames:
+            if not self.check_single_elb_status(lbname):
+                return False
+        return True
 
     
 class UpdateStep(models.Model):
@@ -161,6 +195,28 @@ class UpdateStep(models.Model):
             self.save()
         else:
             raise Exception("Cannot set step as finished.")
+
+    def check_ec2_finished(self):
+        if self.module.check_ec2_status():
+            self.ec2_finished = True
+            self.save()
+            return True
+        return False
+
+    def check_elb_finished(self):
+        if self.module.check_elb_status():
+            self.elb_finished = True
+            self.save()
+            return True
+        return False
+
+    def check_finished(self):
+        if not self.check_ec2_finished():
+            return (False, "Not enough healthy EC2 instances.")
+        if not self.check_elb_finished():
+            return (False, "ELB tasks not finished.")
+        return (True, "")
+        
 
 
 class UpdatePlan(models.Model):
