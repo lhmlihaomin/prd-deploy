@@ -162,7 +162,6 @@ class EC2Checker(object):
         checks = []
         cmds = []
         for check_name in self.generic_checks:
-            print("getting cmd "+check_name)
             check_func = getattr(self, 'cmd_'+check_name)
             checks.append(check_name)
             cmds.append(check_func())
@@ -218,7 +217,7 @@ class EC2Checker(object):
             cmds += mod_cmds
         return (checks, cmds)
 
-    def do_check(self):
+    def run_checks(self):
         # update instance information if in "unstable" state:
         if self.ec2instance.running_state in ('pending', 'stopping', 'shutting-down'):
             try:
@@ -234,73 +233,22 @@ class EC2Checker(object):
                 return {}
         results = {}
         checks, cmds = self.assemble_check_cmd()
+        print(checks, cmds)
         if len(checks) == 0:
             return results
-        with SshHandler(self.ec2instance, self.pem_dir) as ssh:
-            for i in range(len(checks)):
-                try:
-                    exit_code, output = ssh.run(cmds[i])
-                    results.update({
-                        checks[i]: int(output) == 1
-                    })
-                except:
-                    results.update({
-                        checks[i]: False
-                    })
-                try:
-                    print("!!! Checking if this instance is terminated.")
-                    s = self.module.profile.get_session(self.module.region)
-                    e = s.resource('ec2')
-                    instance = e.Instance(self.ec2instance.instance_id)
-                    instance.load()
-                    print(instance.vpc_id)
-                    print(instance.key_pair)
-                    self.ec2instance.running_state = instance.state['Name']
-                    print("!!! "+instance.id)
-                except:
-                    print("!!! Cannot describe instance. Instance might have been terminated.")
-                    self.ec2instance.running_state = "Terminated"
-                    self.ec2instance.save()
-                    return {}
-                return results
-        return results
-
-
-    def perform_check(self):
-        # update instance information if it's in an "unstable" state:
-        if self.ec2instance.running_state in ('pending', 'stopping', 'shutting-down'):
+        ssh = SshHandler(self.ec2instance, self.pem_dir)
+        for i in range(len(checks)):
             try:
-                s = self.module.profile.get_session(self.module.region)
-                e = s.resource('ec2')
-                instance = e.Instance(self.ec2instance.instance_id)
-                self.ec2instance.running_state = instance.state['Name']
-                self.ec2instance.save()
-            except:
-                print("!!! Cannot describe instance. Instance might have been terminated.")
-                self.ec2instance.running_state = "Terminated"
-                self.ec2instance.save()
-                return {}
-        results = {}
-        checks, cmds = self.assemble_check_cmd()
-        if len(checks) == 0:
-            return results
-        cmd = ";".join(cmds)
-        print(cmd)
-        self.set_fabric_env()
-        with settings(abort_exception=EC2CheckerException), hide('running', 'stdout', 'stderr'):
-            try:
-                r = run(cmd)
-                outputs = r.stdout.replace("\r", "").split("\n")
-                for i, output in enumerate(outputs):
-                    results.update({
-                        checks[i]: int(output) == 1
-                    })
+                exit_code, output, err = ssh.run(cmds[i])
+                print("||%s: %s"%(checks[i], output))
+                results.update({
+                    checks[i]: int(output) == 1
+                })
             except Exception as ex:
-                print("!!! "+ex.message)
-                for check_name in checks:
-                    results.update({
-                        check_name: False
-                    })
+                raise ex
+                results.update({
+                    checks[i]: False
+                })
                 try:
                     print("!!! Checking if this instance is terminated.")
                     s = self.module.profile.get_session(self.module.region)
@@ -317,7 +265,9 @@ class EC2Checker(object):
                     self.ec2instance.save()
                     return {}
                 return results
+        ssh.close()
         return results
+
 
     def save_results(self, results):
         if len(results.keys()) == 0:
@@ -351,7 +301,7 @@ class CheckRunner(threading.Thread):
         self.ec2checker = ec2checker
 
     def run(self):
-        results = self.ec2checker.perform_check()
+        results = self.ec2checker.run_checks()
         self.ec2checker.save_results(results)
         return True
 

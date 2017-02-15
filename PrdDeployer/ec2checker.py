@@ -250,6 +250,7 @@ class EC2Checker(object):
                         checks[i]: int(output) == 1
                     })
             except Exception as ex:
+                raise ex
                 print("!!! "+ex.message)
                 for check_name in checks:
                     results.update({

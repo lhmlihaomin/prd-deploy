@@ -21,7 +21,7 @@ from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
 from ec2mgr.models import EC2Instance
 #from checktask import EC2CheckTask
-from ec2checker import EC2Checker, CheckRunner
+from schtasks.ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
 #PROFILE = "global-prd"
@@ -78,7 +78,6 @@ def check_region(profile_name, region_name, check_all=False):
         runner.start()
     for runner in runners:
         runner.join()
-    fabric.network.disconnect_all()
 
 
 def main():

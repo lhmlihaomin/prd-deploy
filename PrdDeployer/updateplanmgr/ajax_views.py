@@ -154,8 +154,8 @@ def stop_module_ec2(request):
 @login_required
 def stop_module_previous_ec2(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
-    if step.finished:
-        return JSONResponse(False)
+    #if step.finished:
+    #    return JSONResponse(False)
     module = step.module
     #module = get_object_or_404(Module, pk=request.POST.get('module_id'))
     module = module.previous_module

@@ -169,6 +169,8 @@ class Module(models.Model):
 
     def check_elb_status(self):
         """True if all elb status are all True"""
+        if len(self.load_balancer_names) == 0:
+            return True
         lbnames = self.load_balancer_names.split(",")
         lbnames = [lbname.strip() for lbname in lbnames]
         for lbname in lbnames:
