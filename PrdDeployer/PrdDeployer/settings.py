@@ -264,3 +264,4 @@ SERVICE_TYPES = {
     "tomcataptget": "tomcat_aptget",
 }
 
+PEM_DIR = os.path.expanduser('~')+os.path.sep+'pem'
