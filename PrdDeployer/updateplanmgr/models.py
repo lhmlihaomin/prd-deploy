@@ -25,6 +25,12 @@ class Module(models.Model):
     # available types are: (java, tomcat, other)
     service_type = models.CharField(max_length=500, default="java")
 
+    def __str__(self):
+        return self.display_name
+
+    def __unicode__(self):
+        return unicode(self.display_name)
+
     def to_dict(self):
         return {
             'name': self.name,
@@ -189,6 +195,9 @@ class UpdateStep(models.Model):
     ec2_finished = models.BooleanField(default=False)
     elb_finished = models.BooleanField(default=False)
 
+    def __str__(self):
+        return "%d: %s"%(self.sequence, self.module.__str__())
+
     def set_finished(self):
         if len(self.module.load_balancer_names) == 0:
             self.elb_finished = True
@@ -232,3 +241,8 @@ class UpdatePlan(models.Model):
     start_time = models.DateTimeField(default=timezone.now)
     finished = models.BooleanField(default=False)
 
+    def __str__(self):
+        return "%s: %s"%(self.project_code, self.project_name)
+
+    def __unicode__(self):
+        return unicode(self.__str__())

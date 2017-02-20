@@ -55,11 +55,14 @@ def check_region(profile_name, region_name, check_all=False):
     for module in Module.objects.filter(**filters):
         print("========== %s =========="%(module.display_name))
         for ec2instance in module.instances.all():
-            #if ec2instance.running_state not in ("running", "pending"):
-            #    print("    "+ec2instance.name+" not running. Skipped.")
-            if ec2instance.service_status != "not_ready":
-                print("    Not a new-born instance. Skipped.")
-                continue
+            if check_all:
+                if ec2instance.running_state not in ("running", "pending"):
+                    print("    "+ec2instance.name+" not running. Skipped.")
+                    continue
+            else:
+                if ec2instance.service_status != "not_ready":
+                    print("    Not a new-born instance. Skipped.")
+                    continue
             print("    Instance: "+ec2instance.name)
             print("    IP: "+ec2instance.private_ip_address)
             #task = EC2CheckTask(module, ec2instance, KEY_FILEPATH)

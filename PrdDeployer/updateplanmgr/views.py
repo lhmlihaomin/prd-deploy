@@ -181,6 +181,7 @@ def make_update_step():
 
 @login_required
 def new_updateplan(request):
+    """Create a new update plan"""
     if request.method =="POST":
         # create plan:
         start_time = request.POST.get('start_time')
@@ -192,6 +193,7 @@ def new_updateplan(request):
             project_name=request.POST.get('project_name'),
             project_code=request.POST.get('project_code'),
             project_leader=request.POST.get('project_leader'),
+            note=request.POST.get('note'),
             start_time=start_time
         )
         plan.save()
