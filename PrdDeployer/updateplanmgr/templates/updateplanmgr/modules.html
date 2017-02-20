@@ -22,6 +22,7 @@ th,td{
         <table>
             <thead>
                 <tr>
+                    <th>Id</th>
                     <th>Name</th>
                     <th>Version</th>
                     <th>Num of Hosts</th>
@@ -34,6 +35,7 @@ th,td{
             <tbody>
                 {% for module in modules %}
                 <tr>
+                    <td>{{module.id}}</td>
                     <td>{{module.name}}</td>
                     <td>{{module.current_version}}</td>
                     <td>{{module.instance_count}}</td>

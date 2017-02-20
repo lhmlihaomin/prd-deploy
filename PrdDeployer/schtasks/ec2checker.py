@@ -38,12 +38,12 @@ class EC2CheckerException(Exception):
 
 
 class EC2Checker(object):
-    def __init__(self, 
-                 module, 
-                 ec2instance, 
-                 pem_dir, 
-                 service_types, 
-                 tzname, 
+    def __init__(self,
+                 module,
+                 ec2instance,
+                 pem_dir,
+                 service_types,
+                 tzname,
                  ready_threshold):
         """Initialize members, set consts."""
         # common members:
@@ -245,7 +245,6 @@ class EC2Checker(object):
                     checks[i]: int(output) == 1
                 })
             except Exception as ex:
-                raise ex
                 results.update({
                     checks[i]: False
                 })

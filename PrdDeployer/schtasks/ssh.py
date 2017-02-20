@@ -20,20 +20,21 @@ class SshHandler(object):
         self.host = self.ec2instance.private_ip_address
         self.username = self.ec2instance.username
         self._init_sshclient()
-        
+
     def _init_sshclient(self):
         self.client = paramiko.client.SSHClient()
         self.client.load_system_host_keys()
         auto_add_policy = paramiko.client.AutoAddPolicy()
         self.client.set_missing_host_key_policy(auto_add_policy)
         self.connected = False
-    
+
     def _connect_sshclient(self):
         if not self.connected:
             self.client.connect(
-                self.host, 
+                self.host,
                 username=self.username,
-                key_filename=self.key_filename)
+                key_filename=self.key_filename,
+                timeout=10)
             self.connected = True
 
     def run(self, cmd):
@@ -41,7 +42,7 @@ class SshHandler(object):
         self._connect_sshclient()
         stdin, stdout, stderr = self.client.exec_command(cmd)
         return (
-            stdout.channel.recv_exit_status(), 
+            stdout.channel.recv_exit_status(),
             stdout.read(),
             stderr.read()
         )
@@ -53,7 +54,7 @@ class SshHandler(object):
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
