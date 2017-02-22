@@ -8,6 +8,7 @@
     <table>
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Instance Id</th>
                 <th>Name</th>
                 <th>Running State</th>
@@ -20,6 +21,7 @@
         <tbody>
         {%for instance in module.instances.all%}
         <tr>
+            <td>{{instance.id}}</td>
             <td>{{instance.instance_id}}</td>
             <td>{{instance.name}}</td>
             <td>{{instance.running_state}}</td>
@@ -32,4 +34,29 @@
         </tbody>
     </table>
     {%endfor%}
+
+    <h5>Edit Instance Info</h5>
+    <form method="POST">{% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Running State</th>
+                    <th>Service Status</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="number" name="id" required /></td>
+                    <td><input type="text" name="running_state" /></td>
+                    <td><input type="text" name="service_status" /></td>
+                    <td><input type="text" name="note" /></td>
+                </tr>
+                <tr>
+                    <td><input type="submit" name="edit" value="Submit" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
 {% endblock %}

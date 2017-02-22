@@ -146,7 +146,17 @@ def instances(request):
     region_name = request.GET.get('region_name')
     module_name = request.GET.get('module')
     online_version = request.GET.get('online')
-    #version = request.GET.get('version')
+    
+    # handle form post if any:
+    if request.method == "POST":
+        ec2instance = get_object_or_404(EC2Instance, pk=request.POST.get('id'))
+        if request.POST.get('running_state'):
+            ec2instance.running_state = request.POST.get('running_state')
+        if request.POST.get('service_status'):
+            ec2instance.service_status = request.POST.get('service_status')
+        if request.POST.get('note'):
+            ec2instance.note = request.POST.get('note')
+        ec2instance.save()
 
     if profile_name is None:
         return HttpResponse("No profile.")

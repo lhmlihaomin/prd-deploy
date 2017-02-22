@@ -5,6 +5,9 @@ html,body{
 table{
     border-collapse: collapse;
 }
+tbody>tr:hover{
+    background-color:#eeeeee;
+}
 th,td{
     border: 1px solid black;
     padding: 5px;
