@@ -3,6 +3,7 @@ import json
 
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from ec2mgr.models import EC2Instance
 
@@ -246,3 +247,40 @@ class UpdatePlan(models.Model):
 
     def __unicode__(self):
         return unicode(self.__str__())
+
+
+class UpdateActionLog(models.Model):
+    # Who:
+    user = models.ForeignKey(User)
+    # When:
+    timestamp = models.DateTimeField(auto_now_add=True)
+    # Where:
+    source_ip = models.CharField(max_length=200)
+    # What:
+    update_plan = models.ForeignKey(UpdatePlan)
+    update_step = models.ForeignKey(UpdateStep)
+    action = models.CharField(max_length=500)
+    # How (additional arguments):
+    ## e.g. 
+    args = models.TextField(blank=True)
+    # Result:
+    ## if succeeded: instance_ids, elb_names, etc.
+    ## if failed: exception, note, etc.
+    result = models.TextField(blank=True)
+
+    def __str__(self):
+        return "UpdateActionLog"
+
+    def __unicode__(self):
+        return unicode(self.__str__())
+
+    @classmethod
+    def create(cls, request, updateplan, updatestep, action, args="", result=""):
+        self.user = request.user
+        self.source_ip = request.META.get('REMOTE_ADDR')
+        self.update_plan = updateplan
+        self.update_step = updatestep
+        action = action
+        args = args
+        result = result
+        
