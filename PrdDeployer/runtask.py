@@ -24,18 +24,10 @@ from ec2mgr.models import EC2Instance
 from schtasks.ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
-#PROFILE = "global-prd"
-PROFILE = "global-prd"
-#REGION = "ap-southeast-1"
-#REGION = "eu-west-1"
+PROFILE = "cn-alpha"
 REGIONS = (
-    "ap-southeast-1",
-    #"eu-west-1",
-    #"us-east-1"
+    "cn-north-1",
 )
-#REGIONS = ("cn-north-1",)
-#REGION = "us-east-1"
-
 
 def check_region(profile_name, region_name, check_all=False):
     profile = AWSProfile.objects.get(name=profile_name)

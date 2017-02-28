@@ -15,7 +15,7 @@ import boto3
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource
 from ec2mgr.models import EC2Instance
-from .models import Module, UpdatePlan, UpdateStep
+from .models import Module, UpdatePlan, UpdateStep, UpdateActionLog
 from boto3helper.ec2 import get_instances_by_filters, \
     get_instance_module_version
 from boto3helper.tags import to_dict, get_name, get_resource_name
@@ -184,6 +184,11 @@ def make_update_step():
 def new_updateplan(request):
     """Create a new update plan"""
     if request.method =="POST":
+        # record action log:
+        actionlog = UpdateActionLog.create(
+            request,
+            action="new_updateplan"
+        )
         # create plan:
         start_time = request.POST.get('start_time')
         fmt = "%Y-%m-%d %H:%M:%S"
@@ -219,6 +224,10 @@ def new_updateplan(request):
             )
             step.save()
             plan.steps.add(step)
+            # update action log:
+            actionlog.update_plan = plan
+            actionlog.result = "succeeded."
+            actionlog.save()
         return HttpResponseRedirect(reverse('updateplanmgr:updateplan', args=(plan.id,)))
         return HttpResponse(
             json.dumps(request.POST, indent=2),
@@ -256,6 +265,11 @@ def new_updateplan(request):
 @login_required
 def new_module(request):
     if request.method == "POST":
+        # record action log:
+        actionlog = UpdateActionLog.create(
+            request,
+            action="new_module"
+        )
         # get form data:
         name = request.POST.get("name")
         profile_name = request.POST.get("profile_name")
@@ -297,6 +311,9 @@ def new_module(request):
         module.save()
         module.set_online_version()
         module.save()
+        # update action log:
+        actionlog.result = "created module %d"%(module.id,)
+        actionlog.save()
         return HttpResponseRedirect(reverse('updateplanmgr:modules', kwargs={'profile_name': profile_name, 'region_name': region_name}))
 
     profiles = AWSProfile.objects.all()

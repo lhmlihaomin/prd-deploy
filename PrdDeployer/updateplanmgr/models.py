@@ -257,8 +257,8 @@ class UpdateActionLog(models.Model):
     # Where:
     source_ip = models.CharField(max_length=200)
     # What:
-    update_plan = models.ForeignKey(UpdatePlan)
-    update_step = models.ForeignKey(UpdateStep)
+    update_plan = models.ForeignKey(UpdatePlan, blank=True, null=True)
+    update_step = models.ForeignKey(UpdateStep, blank=True, null=True)
     action = models.CharField(max_length=500)
     # How (additional arguments):
     ## e.g. 
@@ -275,12 +275,13 @@ class UpdateActionLog(models.Model):
         return unicode(self.__str__())
 
     @classmethod
-    def create(cls, request, updateplan, updatestep, action, args="", result=""):
-        self.user = request.user
-        self.source_ip = request.META.get('REMOTE_ADDR')
-        self.update_plan = updateplan
-        self.update_step = updatestep
-        action = action
-        args = args
-        result = result
-        
+    def create(cls, request, updateplan=None, updatestep=None, action="", args="", result=""):
+        return cls(
+            user = request.user,
+            source_ip = request.META.get('REMOTE_ADDR'),
+            update_plan = updateplan,
+            update_step = updatestep,
+            action = action,
+            args = args,
+            result = result
+      ) 
