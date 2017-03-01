@@ -13,7 +13,7 @@ import boto3
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource
-from .models import Module, UpdatePlan, UpdateStep
+from .models import Module, UpdatePlan, UpdateStep, UpdateActionLog
 from boto3helper.ec2 import get_instances_by_filters, \
     get_instance_module_version
 from boto3helper.tags import to_dict, get_name, get_resource_name
@@ -35,7 +35,16 @@ def run_module_ec2(request):
     """
     # read request and models:
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    # record action log:
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.plan,
+        update_step = step,
+        action = "run_module_ec2"
+    )
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module
     # boto3 session:
@@ -43,6 +52,8 @@ def run_module_ec2(request):
     ec2res = session.resource('ec2')
     # boto3 throws errors if instance_count is 0, so intercept it here:
     if module.launch_count == 0:
+        actionlog.set_result(False, "Launch number is 0.")
+        actionlog.save()
         return JSONResponse([])
     # run instances:
     try:
@@ -66,18 +77,33 @@ def run_module_ec2(request):
             module.instances.add(ec2instance)
             instance_ids.append(instance.id)
     except Exception as ex:
+        actionlog.set_result(False, ex.message)
+        actionlog.save()
         return HttpResponse(ex.message, status=500)
+    actionlog.set_result(True, instance_ids)
+    actionlog.save()
     return JSONResponse(instance_ids)
 
 
 @login_required
 def add_module_ec2_tags(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    # record action log:
+    actionlog = UpdateActionLog.create(
+        request,
+        step.update_plan,
+        step,
+        "add_module_ec2_tags"
+    )
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module
     instance_ids = request.POST.getlist('instance_ids[]')
     if len(instance_ids) == 0:
+        actionlog.set_result(False, "No instances to add tags to.")
+        actionlog.save()
         return JSONResponse("No Instance ID.")
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
@@ -91,7 +117,10 @@ def add_module_ec2_tags(request):
                 ec2instance.name = result[instance_id]
                 ec2instance.save()
     except Exception as ex:
+        actionlog.set_result(False, ex.message)
+        actionlog.save()
         return HttpResponse(ex.message, status=500)
+    actionlog.set_result(True, result)
     return JSONResponse(result)
 
 
@@ -99,11 +128,22 @@ def add_module_ec2_tags(request):
 @login_required
 def add_module_volume_tags(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    # record action log:
+    actionlog = UpdateActionLog.create(
+        request,
+        step.update_plan,
+        step,
+        "add_module_volume_tags"
+    )
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module
     instance_ids = request.POST.getlist('instance_ids[]')
     if len(instance_ids) == 0:
+        actionlog.set_result(False, "No instances to add tags to.")
+        actionlog.save()
         return JSONResponse("No Instance ID.")
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
@@ -116,7 +156,10 @@ def add_module_volume_tags(request):
                 ec2instance.volume_tags_added = True
                 ec2instance.save()
     except Exception as ex:
+        actionlog.set_result(False, ex.message)
+        actionlog.save()
         return HttpResponse(ex.message, status=500)
+    actionlog.set_result(True, result)
     return JSONResponse(result)
 
 

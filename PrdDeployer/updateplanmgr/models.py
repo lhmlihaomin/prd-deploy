@@ -238,7 +238,7 @@ class UpdatePlan(models.Model):
     project_leader = models.CharField(max_length=500)
     note = models.TextField()
     # update procedure:
-    steps = models.ManyToManyField(UpdateStep)
+    steps = models.ManyToManyField(UpdateStep, related_name="update_plan")
     start_time = models.DateTimeField(default=timezone.now)
     finished = models.BooleanField(default=False)
 
@@ -275,13 +275,17 @@ class UpdateActionLog(models.Model):
         return unicode(self.__str__())
 
     @classmethod
-    def create(cls, request, updateplan=None, updatestep=None, action="", args="", result=""):
+    def create(cls, request, update_plan=None, update_step=None, action="", args="", result=""):
         return cls(
             user = request.user,
             source_ip = request.META.get('REMOTE_ADDR'),
-            update_plan = updateplan,
-            update_step = updatestep,
+            update_plan = update_plan,
+            update_step = update_step,
             action = action,
             args = args,
             result = result
       ) 
+
+    def set_result(result, message=""):
+        self.result = json.dumps((result, message))
+

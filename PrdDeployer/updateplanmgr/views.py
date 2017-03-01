@@ -226,7 +226,7 @@ def new_updateplan(request):
             plan.steps.add(step)
             # update action log:
             actionlog.update_plan = plan
-            actionlog.result = "succeeded."
+            actionlog.set_result(True)
             actionlog.save()
         return HttpResponseRedirect(reverse('updateplanmgr:updateplan', args=(plan.id,)))
         return HttpResponse(
@@ -312,7 +312,7 @@ def new_module(request):
         module.set_online_version()
         module.save()
         # update action log:
-        actionlog.result = "created module %d"%(module.id,)
+        actionlog.set_result(True, "created module %d"%(module.id,))
         actionlog.save()
         return HttpResponseRedirect(reverse('updateplanmgr:modules', kwargs={'profile_name': profile_name, 'region_name': region_name}))
 
