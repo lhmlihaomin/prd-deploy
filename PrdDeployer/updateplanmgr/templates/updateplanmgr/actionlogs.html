@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Update Action Logs{% endblock %}
+{% block body %}
+    <h1>{{plan.project_name}}</h1>
+{% for loginfo in logs %}
+    <h3>STEP {{loginfo.0}}: {{loginfo.1}}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Source IP</th>
+                <th>Action</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+    {% for log in loginfo.2 %}
+        <tbody>
+            <tr>
+                <td>{{log.timestamp}}</td>
+                <td>{{log.user.username}}</td>
+                <td>{{log.source_ip}}</td>
+                <td>{{log.action}}</td>
+                <td>{{log.result}}</td>
+            </tr>
+        </tbody>
+    {% endfor %}
+    </table>
+{% endfor %}
+
+{% endblock %}

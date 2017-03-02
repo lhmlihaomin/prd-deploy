@@ -5,6 +5,7 @@
 <h3>{{plan.project_code}} -- {{plan.project_leader}}</h3>
 <a href="{% url 'updateplanmgr:instances_summary' plan_id=plan.id %}" target="_blank">Check EC2 Status</a>
 <a href="{% url 'updateplanmgr:elb_summary' plan_id=plan.id %}" target="_blank">Check ELB Status</a>
+<a href="{% url 'updateplanmgr:actionlogs' plan_id=plan.id %}" target="_blank">View Action Logs</a>
 <table>
     <thead>
         <tr>

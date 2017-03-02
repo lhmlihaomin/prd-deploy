@@ -413,3 +413,21 @@ def elb_summary(request, plan_id):
                 })
     context['elb_states'] = elb_states
     return render(request, 'updateplanmgr/elb_summary.html', context=context)
+
+
+@login_required
+def actionlogs(request, plan_id):
+    plan = get_object_or_404(UpdatePlan, pk=plan_id)
+    steps = plan.steps.order_by('sequence')
+    logs = []
+    for step in steps:
+        actionlogs = UpdateActionLog.objects.filter(
+            update_plan = plan,
+            update_step = step
+        )
+        logs.append([step.sequence, step.module.__unicode__(), actionlogs])
+    context = {
+        'plan': plan,
+        'logs': logs
+    }
+    return render(request, 'updateplanmgr/actionlogs.html', context=context)

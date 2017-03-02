@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^fix_service_types/$', views.fix_service_types, name='fix_service_types'),
     url(r'^instances_summary/(?P<plan_id>\d+)/$', views.instances_summary, name='instances_summary'),
     url(r'^elb_summary/(?P<plan_id>\d+)/$', views.elb_summary, name='elb_summary'),
+    url(r'actionlogs/(?P<plan_id>\d+)/$', views.actionlogs, name='actionlogs'),
 
     # ajax views:
     url(r'ajax/run_module_ec2/', ajax_views.run_module_ec2, name='ajax.run_module_ec2'),
