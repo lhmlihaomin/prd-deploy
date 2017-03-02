@@ -38,10 +38,11 @@ def run_module_ec2(request):
     # record action log:
     actionlog = UpdateActionLog.create(
         request,
-        update_plan = step.plan,
+        update_plan = step.update_plan.first(),
         update_step = step,
         action = "run_module_ec2"
     )
+    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -91,10 +92,11 @@ def add_module_ec2_tags(request):
     # record action log:
     actionlog = UpdateActionLog.create(
         request,
-        step.update_plan,
+        step.update_plan.first(),
         step,
         "add_module_ec2_tags"
     )
+    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -121,6 +123,8 @@ def add_module_ec2_tags(request):
         actionlog.save()
         return HttpResponse(ex.message, status=500)
     actionlog.set_result(True, result)
+    actionlog.save()
+    print(actionlog.action)
     return JSONResponse(result)
 
 
@@ -131,10 +135,11 @@ def add_module_volume_tags(request):
     # record action log:
     actionlog = UpdateActionLog.create(
         request,
-        step.update_plan,
+        step.update_plan.first(),
         step,
         "add_module_volume_tags"
     )
+    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -160,6 +165,8 @@ def add_module_volume_tags(request):
         actionlog.save()
         return HttpResponse(ex.message, status=500)
     actionlog.set_result(True, result)
+    actionlog.save()
+    print(actionlog.action)
     return JSONResponse(result)
 
 
@@ -183,7 +190,16 @@ def stop_module_ec2_instances(ec2res, module):
 @login_required
 def stop_module_ec2(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.update_plan.first(),
+        update_step = step,
+        action = "stop_module_ec2"
+    )
+    print(actionlog.action)
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module
     #module = get_object_or_404(Module, pk=request.POST.get('module_id'))
@@ -191,6 +207,8 @@ def stop_module_ec2(request):
     ec2res = session.resource('ec2')
 
     ret = stop_module_ec2_instances(ec2res, module)
+    actionlog.set_result(True, instance_ids)
+    actionlog.save()
     return JSONResponse(ret)
 
 
@@ -212,7 +230,16 @@ def stop_module_previous_ec2(request):
 @login_required
 def reg_module_elb(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.update_plan.first(),
+        update_step = step,
+        action = "reg_module_elb"
+    )
+    print(actionlog.action)
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module
     session = module.profile.get_session(module.region)
@@ -235,6 +262,8 @@ def reg_module_elb(request):
         except Exception as ex:
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
+    actionlog.set_result(True, instance_ids)
+    actionlog.save()
     return JSONResponse(ret)
 
 
@@ -269,13 +298,26 @@ def dereg_module_elb(request):
 @login_required
 def finish_step(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.update_plan.first(),
+        update_step = step,
+        action = "finish_step"
+    )
+    print(actionlog.action)
     module = step.module
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse((False, "Step already finished."))
     result = step.check_finished()
     if not result[0]:
+        actionlog.set_result(False, result[1])
+        actionlog.save()
         return JSONResponse(result)
     step.set_finished()
+    actionlog.set_result(True, "")
+    actionlog.save()
     return JSONResponse((True, ""))
 
 

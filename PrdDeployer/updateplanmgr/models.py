@@ -286,6 +286,6 @@ class UpdateActionLog(models.Model):
             result = result
       ) 
 
-    def set_result(result, message=""):
+    def set_result(self, result, message=""):
         self.result = json.dumps((result, message))
 
