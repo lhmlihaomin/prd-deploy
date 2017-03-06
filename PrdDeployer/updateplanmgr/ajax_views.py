@@ -42,7 +42,6 @@ def run_module_ec2(request):
         update_step = step,
         action = "run_module_ec2"
     )
-    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -96,7 +95,6 @@ def add_module_ec2_tags(request):
         step,
         "add_module_ec2_tags"
     )
-    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -124,7 +122,6 @@ def add_module_ec2_tags(request):
         return HttpResponse(ex.message, status=500)
     actionlog.set_result(True, result)
     actionlog.save()
-    print(actionlog.action)
     return JSONResponse(result)
 
 
@@ -139,7 +136,6 @@ def add_module_volume_tags(request):
         step,
         "add_module_volume_tags"
     )
-    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -166,7 +162,6 @@ def add_module_volume_tags(request):
         return HttpResponse(ex.message, status=500)
     actionlog.set_result(True, result)
     actionlog.save()
-    print(actionlog.action)
     return JSONResponse(result)
 
 
@@ -196,7 +191,6 @@ def stop_module_ec2(request):
         update_step = step,
         action = "stop_module_ec2"
     )
-    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -236,7 +230,6 @@ def reg_module_elb(request):
         update_step = step,
         action = "reg_module_elb"
     )
-    print(actionlog.action)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -262,7 +255,7 @@ def reg_module_elb(request):
         except Exception as ex:
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
-    actionlog.set_result(True, instance_ids)
+    actionlog.set_result(True, ret)
     actionlog.save()
     return JSONResponse(ret)
 
@@ -270,7 +263,15 @@ def reg_module_elb(request):
 @login_required
 def dereg_module_elb(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.update_plan.first(),
+        update_step = step,
+        action = "dereg_module_elb"
+    )
     if step.finished:
+        actionlog.set_result(False, "Step already finished.")
+        actionlog.save()
         return JSONResponse(False)
     module = step.module.previous_module
     session = module.profile.get_session(module.region)
@@ -292,6 +293,8 @@ def dereg_module_elb(request):
         except Exception as ex:
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
+    actionlog.set_result(True, ret)
+    actionlog.save()
     return JSONResponse(ret)
 
 
@@ -304,7 +307,6 @@ def finish_step(request):
         update_step = step,
         action = "finish_step"
     )
-    print(actionlog.action)
     module = step.module
     if step.finished:
         actionlog.set_result(False, "Step already finished.")

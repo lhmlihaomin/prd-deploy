@@ -3,7 +3,9 @@
 {% block body %}
     <h1>{{plan.project_name}}</h1>
 {% for loginfo in logs %}
+    {% if loginfo.0 != -1 %}
     <h3>STEP {{loginfo.0}}: {{loginfo.1}}</h3>
+    {% endif %}
     <table>
         <thead>
             <tr>

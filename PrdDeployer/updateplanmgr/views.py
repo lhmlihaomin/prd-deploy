@@ -203,6 +203,10 @@ def new_updateplan(request):
             start_time=start_time
         )
         plan.save()
+        # update action log:
+        actionlog.update_plan = plan
+        actionlog.set_result(True)
+        actionlog.save()
         # create each step and add to plan:
         stepCount = int(request.POST.get('stepCount'))
         for i in range(stepCount):
@@ -224,10 +228,6 @@ def new_updateplan(request):
             )
             step.save()
             plan.steps.add(step)
-            # update action log:
-            actionlog.update_plan = plan
-            actionlog.set_result(True)
-            actionlog.save()
         return HttpResponseRedirect(reverse('updateplanmgr:updateplan', args=(plan.id,)))
         return HttpResponse(
             json.dumps(request.POST, indent=2),
@@ -420,6 +420,11 @@ def actionlogs(request, plan_id):
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
     logs = []
+    actionlogs = UpdateActionLog.objects.filter(
+        update_plan = plan,
+        update_step__isnull=True
+    )
+    logs.append([-1, "", actionlogs])
     for step in steps:
         actionlogs = UpdateActionLog.objects.filter(
             update_plan = plan,
