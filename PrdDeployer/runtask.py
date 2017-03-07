@@ -62,7 +62,7 @@ def check_region(profile_name, region_name, check_all=False):
                                  KEY_FILEPATH,
                                  settings.SERVICE_TYPES,
                                  settings.TIME_ZONE,
-                                 300)
+                                 settings.RUN_THRESHOLD)
             runners.append(CheckRunner(checker))
             #results = checker.perform_check()
             #checker.save_results(results)

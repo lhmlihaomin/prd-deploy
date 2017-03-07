@@ -30,3 +30,9 @@ if service_status == 'stopped':
     else:
         do nothing
 """
+
+import time
+
+
+class EC2Stopper(object):
+    pass
