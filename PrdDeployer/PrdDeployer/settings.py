@@ -265,5 +265,5 @@ SERVICE_TYPES = {
 }
 
 PEM_DIR = os.path.expanduser('~')+os.path.sep+'pem'
-RUN_THRESHOLD = 300
-STOP_THRESHOLD = 300
+RUN_TIMEOUT = 300
+STOP_TIMEOUT = 300

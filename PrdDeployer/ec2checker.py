@@ -37,7 +37,7 @@ class EC2CheckerException(Exception):
 
 
 class EC2Checker(object):
-    def __init__(self, module, ec2instance, pem_dir, service_types, tzname, ready_threshold):
+    def __init__(self, module, ec2instance, pem_dir, service_types, tzname, ready_timeout):
         self.module = module
         self.ec2instance = ec2instance
         self.pem_dir = pem_dir
@@ -57,7 +57,7 @@ class EC2Checker(object):
             self.is_newinstance = False
 
         self.timezone = pytz.timezone(tzname)
-        self.ready_threshold = ready_threshold
+        self.ready_timeout = ready_timeout
 
         self.service_checks = {
             'java': (
@@ -291,7 +291,7 @@ class EC2Checker(object):
                 if self.is_newinstance:
                     # if it's just started, mark as not_ready:
                     dt = now - self.ec2instance.created_at
-                    if dt.seconds < self.ready_threshold:
+                    if dt.seconds < self.ready_timeout:
                         self.ec2instance.set_not_ready()
                         break
                 # otherwise mark as down:

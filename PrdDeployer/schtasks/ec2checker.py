@@ -103,8 +103,20 @@ class EC2Checker(object):
             version
         return self.cmd_process(process_name)
 
+    def cmd_java_status(self, name, version):
+        statuspath = "/home/%s/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+            self.ec2instance.username,
+            name,
+            name,
+            version
+        )
+        statuspath = statuspath + "/status.sh"
+        cmd = "/bin/bash " + statuspath + "|grep 'is running'|wc -l"
+        return cmd
+
     def cmd_tomcat_service(self, name, version):
-        statuspath = "/home/ubuntu/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+        statuspath = "/home/%s/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+            self.ec2instance.username,
             name,
             name,
             version
