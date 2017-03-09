@@ -16,6 +16,7 @@ class EC2Instance(models.Model):
     volume_tags_added = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     last_checked_at = models.DateTimeField(blank=True, null=True)
+    service_stopped_at = models.DateTimeField(blank=True, null=True)
 
     vpc_id = models.CharField(max_length=500, default="")
 
