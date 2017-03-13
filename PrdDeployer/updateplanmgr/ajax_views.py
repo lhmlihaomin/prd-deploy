@@ -200,7 +200,8 @@ def stop_module_ec2(request):
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
 
-    ret = stop_module_ec2_instances(ec2res, module)
+    #ret = stop_module_ec2_instances(ec2res, module)
+    ret = module.mark_instances_for_stopping()
     actionlog.set_result(True, instance_ids)
     actionlog.save()
     return JSONResponse(ret)
@@ -216,8 +217,8 @@ def stop_module_previous_ec2(request):
     module = module.previous_module
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
-
-    ret = stop_module_ec2_instances(ec2res, module)
+    ret = module.mark_instances_for_stopping()
+    #ret = stop_module_ec2_instances(ec2res, module)
     return JSONResponse(ret)
 
 

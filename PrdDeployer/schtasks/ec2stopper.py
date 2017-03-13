@@ -39,6 +39,7 @@ import django
 import datetime
 import threading
 
+from schtasks.ssh import SshHandler
 
 class EC2CheckerException(Exception):
     pass
@@ -175,6 +176,7 @@ class EC2Stopper(object):
                         actions[i]: exit_code == 0
                     })
                 except Exception as ex:
+                    print(ex)
                     results.update({
                         actions[i]: False
                     })
@@ -202,3 +204,14 @@ class EC2Stopper(object):
             self.ec2instance.last_checked_at = \
                 self.timezone.localize(datetime.datetime.now())
             return
+
+
+class StopperRunner(threading.Thread):
+    def __init__(self, ec2stopper):
+        threading.Thread.__init__(self)
+        self.ec2stopper = ec2stopper
+
+    def run(self):
+        results = self.ec2stopper.run_stop_commands()
+        return True
+        

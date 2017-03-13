@@ -185,6 +185,14 @@ class Module(models.Model):
                 return False
         return True
 
+    def mark_instances_for_stopping(self):
+        ret = {}
+        for ec2instance in self.instances.all():
+            ec2instance.service_status = "to_stop"
+            ec2instance.save()
+            ret.update({ec2instance.instance_id: True})
+        return ret
+
     
 class UpdateStep(models.Model):
     #update_plan = models.ForeignKey(UpdatePlan)
