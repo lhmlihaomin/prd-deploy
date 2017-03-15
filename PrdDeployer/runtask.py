@@ -3,9 +3,10 @@ import sys
 import django
 import datetime
 import json
+import argparse
 
 KEY_FILEPATH = "/home/ubuntu/pem/"
-LOG_FILE = "/home/ubuntu/ec2checker.log"
+LOG_FILE = "ec2checker.log"
 #timestamp = datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H-%M-%S")
 #logfile = open(LOG_FILE%(timestamp,), 'a')
 logfile = open(LOG_FILE, 'a')
@@ -24,10 +25,20 @@ from ec2mgr.models import EC2Instance
 from schtasks.ec2checker import EC2Checker, CheckRunner
 from django.conf import settings
 
-PROFILE = "cn-alpha"
-REGIONS = (
-    "cn-north-1",
-)
+
+def parse_args():
+    """define and parse arguments"""
+    parser = argparse.ArgumentParser(description="Check EC2Instance status.")
+    parser.add_argument('-p', '--profile',
+                        help="Check modules belonging to this profile.")
+    parser.add_argument('-r', '--region',
+                        nargs='+',
+                        help="Regions to check.")
+    parser.add_argument('-a', '--checkall',
+                        action="store_true",
+                        help="Check all instances in 'running' & 'pending' state. Not only those are 'not_ready'.")
+    args = parser.parse_args()
+    return args
 
 def check_region(profile_name, region_name, check_all=False):
     profile = AWSProfile.objects.get(name=profile_name)
@@ -73,19 +84,19 @@ def check_region(profile_name, region_name, check_all=False):
 
 
 def main():
-    check_all=False
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "-a":
-            check_all = True
+    args = parse_args()
+    
+    profile_name = args.profile
+    region_names = args.region
+    check_all = args.checkall
+    
     logfile.write("BEGIN: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
-    for region_name in REGIONS:
-        check_region(PROFILE, region_name, check_all=check_all)
+    for region_name in region_names:
+        check_region(profile_name, region_name, check_all=check_all)
     logfile.write("END: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
     logfile.close()
 
-
 if __name__ == "__main__":
     main()
-
