@@ -262,6 +262,9 @@ SERVICE_TYPES = {
     # dev test modules:
     "echoserver": "echo_server",
     "tomcataptget": "tomcat_aptget",
+    "ddns": "java",
+    "gwDevConnector": "java",
+    "gwAppserver": "tomcat"
 }
 
 PEM_DIR = os.path.expanduser('~')+os.path.sep+'pem'
