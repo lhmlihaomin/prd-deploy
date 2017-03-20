@@ -1,15 +1,15 @@
 """
 A class that handles EC2Instances that have been marked as 'to_stop'.
-Step 1. The module and service_type of this instance is read to determine how 
-        its application and services should be stopped. 
-Step 2. The corresponding stop_* methods are invoked to send SSH commands to 
+Step 1. The module and service_type of this instance is read to determine how
+        its application and services should be stopped.
+Step 2. The corresponding stop_* methods are invoked to send SSH commands to
         this instance.
-Step 3. If the stop commands return no error, the instance's service_status 
-        will be marked as 'stopped'. The timestamp is also recorded. The 
-        instance itself will not be stopped immediately since there might be 
+Step 3. If the stop commands return no error, the instance's service_status
+        will be marked as 'stopped'. The timestamp is also recorded. The
+        instance itself will not be stopped immediately since there might be
         unfinished background tasks, such as uploading final log files.
-Step 4. If an instance has been marked as serivce stopped for longer than 
-        'STOP_THRESHOLD' seconds (set in settings.py), boto3's stop_instances 
+Step 4. If an instance has been marked as serivce stopped for longer than
+        'STOP_THRESHOLD' seconds (set in settings.py), boto3's stop_instances
         method is called to stop it for real.
 
 if service_status == 'to_stop':
@@ -48,14 +48,14 @@ class EC2CheckerException(Exception):
 class EC2Stopper(object):
     def __init__(self, module, ec2instance, pem_dir, service_types, tzname, stop_timeout):
         self.module = module
-        self.ec2instance = ec2instance 
+        self.ec2instance = ec2instance
         self.pem_dir = pem_dir
         self.service_types = service_types
         self.key_filename = os.path.sep.join([
             pem_dir,
             self.ec2instance.key_pair + ".pem"
         ])
-        
+
         self.timezone = pytz.timezone(tzname)
         self.stop_timeout = stop_timeout
 
@@ -183,26 +183,30 @@ class EC2Stopper(object):
             self.ec2instance.service_status = "stopped"
             now = self.timezone.localize(datetime.datetime.now())
             self.ec2instance.service_stopped_at = now
+            self.ec2instance.save()
             return results
-        # if service already stopped, shutdown those stopped longer than 
+        # if service already stopped, shutdown those stopped longer than
         # STOP_TIMEOUT
         if self.ec2instance.service_status == "stopped":
             now = self.timezone.localize(datetime.datetime.now())
             dt = now - self.ec2instance.service_stopped_at
-            # do nothing if instance service hasn't been stopped for 
+            # do nothing if instance service hasn't been stopped for
             # STOP_TIMEOUT seconds:
             if dt.seconds < self.stop_timeout:
                 return
             # stop the instance and update running_state:
             s = self.module.profile.get_session(self.module.region)
             e = s.resource('ec2')
-            instance = e.Instance(self.ec2instance.instance_id)
-            resp = instance.stop()
-            #self.ec2instance.running_state = \
-            #    resp['StoppingInstances'][0]['CurrentState']['Name']
-            self.ec2instance.running_state = instance.state['Name']
-            self.ec2instance.last_checked_at = \
-                self.timezone.localize(datetime.datetime.now())
+            user_input = raw_input("Stop this instance: %s (y/n)? "%(self.ec2instance.name,))
+            if user_input == "y":
+                instance = e.Instance(self.ec2instance.instance_id)
+                resp = instance.stop()
+                self.ec2instance.running_state = instance.state['Name']
+                self.ec2instance.last_checked_at = \
+                    self.timezone.localize(datetime.datetime.now())
+                self.ec2instance.save()
+            else:
+                print("skipping.")
             return
 
 
@@ -214,4 +218,4 @@ class StopperRunner(threading.Thread):
     def run(self):
         results = self.ec2stopper.run_stop_commands()
         return True
-        
+

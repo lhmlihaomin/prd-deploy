@@ -13,6 +13,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Id</th>
+                    <th>IP</th>
                     <th>State</th>
                     <th>Service</th>
                 </tr>
@@ -22,6 +23,7 @@
                 <tr>
                     <td>{{ instance.name }}</td>
                     <td>{{ instance.instance_id }}</td>
+                    <td>{{ instance.private_ip_address }}</td>
                     <td>{{ instance.running_state }}</td>
                     <td>{{ instance.service_status }}</td>
                 {% endfor %}
