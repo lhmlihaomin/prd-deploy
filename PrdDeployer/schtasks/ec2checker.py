@@ -42,7 +42,7 @@ class EC2Checker(object):
                  module,
                  ec2instance,
                  pem_dir,
-                 service_types,
+                 #service_types,
                  tzname,
                  ready_threshold):
         """Initialize members, set consts."""
@@ -50,7 +50,7 @@ class EC2Checker(object):
         self.module = module
         self.ec2instance = ec2instance
         self.pem_dir = pem_dir
-        self.service_types = service_types
+        #self.service_types = service_types
         self.service_status = self.ec2instance.service_status
         if self.ec2instance.service_status == "not_ready":
             self.is_newinstance = True
@@ -179,16 +179,23 @@ class EC2Checker(object):
             cmds.append(check_func())
         return (checks, cmds)
 
-    def assemble_module_cmd(self, module_name, version):
+    def assemble_module_cmd(self, module_name, version, service_type):
         checks = []
         cmds = []
-        if self.service_types.has_key(module_name):
-            service_type = self.service_types[module_name]
-            if self.service_checks.has_key(service_type):
-                for check_name in self.service_checks[service_type]:
-                    check_func = getattr(self, 'cmd_'+check_name)
-                    checks.append(check_name)
-                    cmds.append(check_func(module_name, version))
+        if self.service_checks.has_key(service_type):
+            for check_name in self.service_checks[service_type]:
+                check_func = getattr(self, 'cmd_'+check_name)
+                checks.append(check_name)
+                cmds.append(check_func(module_name, version))
+        else:
+            print("Unknown service type: %s"%(service_type,))
+        #if self.service_types.has_key(module_name):
+        #    service_type = self.service_types[module_name]
+        #    if self.service_checks.has_key(service_type):
+        #        for check_name in self.service_checks[service_type]:
+        #            check_func = getattr(self, 'cmd_'+check_name)
+        #            checks.append(check_name)
+        #            cmds.append(check_func(module_name, version))
         return (checks, cmds)
 
     def assemble_newinstance_cmd(self):
@@ -214,17 +221,19 @@ class EC2Checker(object):
         module_names = self.module.name.split('_')
         versions = self.module.current_version.split('_')
         service_types = self.module.service_type.split('_')
+        print(service_types)
         mod_count = len(module_names)
         for i in range(mod_count):
             module_name = module_names[i]
             version = versions[i]
-            if self.service_types.has_key(module_name):
-                service_type = self.service_types[module_name]
-            else:
+            service_type = service_types[i]
+            #if self.service_types.has_key(module_name):
+            #    service_type = self.service_types[module_name]
+            #else:
                 #continue
                 # skip instances with unknown services:
-                return ([], [])
-            mod_checks, mod_cmds = self.assemble_module_cmd(module_name, version)
+            #    return ([], [])
+            mod_checks, mod_cmds = self.assemble_module_cmd(module_name, version, service_type)
             checks += mod_checks
             cmds += mod_cmds
         return (checks, cmds)

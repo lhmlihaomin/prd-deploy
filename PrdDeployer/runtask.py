@@ -74,7 +74,7 @@ def check_region(profile_name, region_name, check_all=False, dryrun=False):
             checker = EC2Checker(module,
                                  ec2instance,
                                  KEY_FILEPATH,
-                                 settings.SERVICE_TYPES,
+                                 #settings.SERVICE_TYPES,
                                  settings.TIME_ZONE,
                                  settings.RUN_TIMEOUT)
             runners.append(CheckRunner(checker, dryrun=dryrun))

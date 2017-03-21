@@ -229,44 +229,6 @@ LOGGING = {
 # Specify the default test runner.
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-
-SERVICE_TYPES = {
-    "account": "java",
-    "accountweb": "tomcat",
-    "account_accountweb": "java_tomcat",
-    "appconnector": "java",
-    "appserver": "tomcat",
-    "appserverinternal": "tomcat",
-    "appservice": "java",
-    "appservice_pushservice": "java_java",
-    "assembler": "java",
-    "connector": "java",
-    "dal": "java",
-    "dalForFailover": "java",
-    "devconnector": "java",
-    "device": "java",
-    "dispatcher": "java",
-    #"elasticsearch": "java",
-    "eswatcher": "java",
-    "eventloop": "java",
-    "eweb": "tomcat",
-    "ipcamera": "java",
-    "mailvalidator": "java",
-    "notification": "java",
-    "pushservice": "java",
-    "sefcore": "java",
-    "snshandler": "java",
-    "storage": "tomcat",
-    "vaserver": "tomcat",
-    "vaservice": "java",
-    # dev test modules:
-    "echoserver": "echo_server",
-    "tomcataptget": "tomcat_aptget",
-    "ddns": "java",
-    "gwDevConnector": "java",
-    "gwAppserver": "tomcat"
-}
-
 PEM_DIR = os.path.expanduser('~')+os.path.sep+'pem'
 RUN_TIMEOUT = 300
 STOP_TIMEOUT = 300
