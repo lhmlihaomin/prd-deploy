@@ -38,6 +38,7 @@ import pytz
 import django
 import datetime
 import threading
+import traceback
 
 from schtasks.ssh import SshHandler
 
@@ -199,12 +200,16 @@ class EC2Stopper(object):
             e = s.resource('ec2')
             user_input = raw_input("Stop this instance: %s (y/n)? "%(self.ec2instance.name,))
             if user_input == "y":
-                instance = e.Instance(self.ec2instance.instance_id)
-                resp = instance.stop()
-                self.ec2instance.running_state = instance.state['Name']
-                self.ec2instance.last_checked_at = \
-                    self.timezone.localize(datetime.datetime.now())
-                self.ec2instance.save()
+                try:
+                    instance = e.Instance(self.ec2instance.instance_id)
+                    resp = instance.stop()
+                    self.ec2instance.running_state = instance.state['Name']
+                    self.ec2instance.last_checked_at = \
+                        self.timezone.localize(datetime.datetime.now())
+                    self.ec2instance.service_status = "shutdown"
+                    self.ec2instance.save()
+                except Exception as ex:
+                    print(traceback.format_exc())
             else:
                 print("skipping.")
             return
