@@ -37,10 +37,13 @@ def parse_args():
     parser.add_argument('-a', '--checkall',
                         action="store_true",
                         help="Check all instances in 'running' & 'pending' state. Not only those are 'not_ready'.")
+    parser.add_argument('-d', '--dryrun',
+                        action="store_true",
+                        help="Only prints check commands but not actually run them.")
     args = parser.parse_args()
     return args
 
-def check_region(profile_name, region_name, check_all=False):
+def check_region(profile_name, region_name, check_all=False, dryrun=False):
     profile = AWSProfile.objects.get(name=profile_name)
     region = AWSRegion.objects.get(name=region_name)
     runners = []
@@ -74,13 +77,18 @@ def check_region(profile_name, region_name, check_all=False):
                                  settings.SERVICE_TYPES,
                                  settings.TIME_ZONE,
                                  settings.RUN_TIMEOUT)
-            runners.append(CheckRunner(checker))
+            runners.append(CheckRunner(checker, dryrun=dryrun))
             #results = checker.perform_check()
             #checker.save_results(results)
-    for runner in runners:
-        runner.start()
-    for runner in runners:
-        runner.join()
+    if dryrun:
+        for runner in runners:
+            runner.run()
+    else:
+        for runner in runners:
+            runner.start()
+        for runner in runners:
+            runner.join()
+
 
 
 def main():
@@ -89,11 +97,12 @@ def main():
     profile_name = args.profile
     region_names = args.region
     check_all = args.checkall
+    dryrun = args.dryrun
     
     logfile.write("BEGIN: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
     for region_name in region_names:
-        check_region(profile_name, region_name, check_all=check_all)
+        check_region(profile_name, region_name, check_all=check_all, dryrun=dryrun)
     logfile.write("END: "+datetime.datetime.strftime(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S"))
     logfile.write("\n")
     logfile.close()

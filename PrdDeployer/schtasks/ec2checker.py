@@ -307,12 +307,21 @@ class EC2Checker(object):
 
 
 class CheckRunner(threading.Thread):
-    def __init__(self, ec2checker):
+    def __init__(self, ec2checker, dryrun=False):
         threading.Thread.__init__(self)
         self.ec2checker = ec2checker
+        self.dryrun=dryrun
 
     def run(self):
-        results = self.ec2checker.run_checks()
+        if self.dryrun:
+            print(self.ec2checker.ec2instance.name)
+            checks, cmds = self.ec2checker.assemble_check_cmd()
+            for i, check_name in enumerate(checks):
+                print(checks[i]+":")
+                print("\t"+cmds[i])
+            print("\r\n\r\n")
+            return False
+        results = self.ec2checker.perform_check()
         self.ec2checker.save_results(results)
         return True
 
