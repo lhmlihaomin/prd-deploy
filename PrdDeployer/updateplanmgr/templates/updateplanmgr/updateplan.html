@@ -56,11 +56,15 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div id="divAjaxMessage">
+</div>
 {% endblock %}
 {% block page_js %}
 <script type="text/javascript">
 function run_module_ec2(step_id) {
     if (!confirm("Run new instances?")) return;
+    show_ajax_action("Launching EC2 instances ...");
     $.ajax({
         url: '/update/ajax/run_module_ec2/',
         method: 'post',
@@ -69,8 +73,12 @@ function run_module_ec2(step_id) {
             step_id: step_id
         },
         success: function(instance_ids) {
+            show_ajax_action(instance_ids);
             console.log(instance_ids);
             add_module_ec2_tags(step_id, instance_ids);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     });
 }
@@ -78,6 +86,7 @@ function run_module_ec2(step_id) {
 function add_module_ec2_tags(step_id, instance_ids) {
     if (instance_ids.length == 0)
         return;
+    show_ajax_action("Adding tags to EC2 instances ...");
     $.ajax({
         url: '/update/ajax/add_module_ec2_tags/',
         method: 'post',
@@ -87,8 +96,12 @@ function add_module_ec2_tags(step_id, instance_ids) {
             instance_ids: instance_ids
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
             add_module_volume_tags(step_id, instance_ids);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     });
 }
@@ -96,6 +109,7 @@ function add_module_ec2_tags(step_id, instance_ids) {
 function add_module_volume_tags(step_id, instance_ids) {
     if (instance_ids.length == 0)
         return;
+    show_ajax_action("Adding tags to EBS volumes ...");
     $.ajax({
         url: '/update/ajax/add_module_volume_tags/',
         method: 'post',
@@ -105,7 +119,11 @@ function add_module_volume_tags(step_id, instance_ids) {
             instance_ids: instance_ids
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -113,6 +131,7 @@ function add_module_volume_tags(step_id, instance_ids) {
 
 function stop_module_ec2(step_id) {
     if (!confirm("Stop these instances?")) return;
+    show_ajax_action("Marking instances as 'to_stop' ...");
     $.ajax({
         url: '/update/ajax/stop_module_ec2/',
         method: 'post',
@@ -121,7 +140,11 @@ function stop_module_ec2(step_id) {
             step_id: step_id
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -129,6 +152,7 @@ function stop_module_ec2(step_id) {
 
 function stop_module_previous_ec2(step_id) {
     if (!confirm("Stop old instances?")) return;
+    show_ajax_action("Marking previous version instances as 'to_stop' ...");
     $.ajax({
         url: '/update/ajax/stop_module_previous_ec2/',
         method: 'post',
@@ -137,7 +161,11 @@ function stop_module_previous_ec2(step_id) {
             step_id: step_id
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -145,6 +173,7 @@ function stop_module_previous_ec2(step_id) {
 
 function reg_module_elb(step_id) {
     if (!confirm("Register new instances?")) return;
+    show_ajax_action("Registering instances with load balancers ...");
     $.ajax({
         url: '/update/ajax/reg_module_elb/',
         method: 'post',
@@ -153,7 +182,11 @@ function reg_module_elb(step_id) {
             step_id: step_id
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -161,6 +194,7 @@ function reg_module_elb(step_id) {
 
 function dereg_module_elb(step_id) {
     if (!confirm("Deregister old instances?")) return;
+    show_ajax_action("Deregistering instances from load balancers ...");
     $.ajax({
         url: '/update/ajax/dereg_module_elb/',
         method: 'post',
@@ -169,7 +203,11 @@ function dereg_module_elb(step_id) {
             step_id: step_id
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -177,6 +215,7 @@ function dereg_module_elb(step_id) {
 
 function finish_step(step_id) {
     if (!confirm("Finish this step?")) return;
+    show_ajax_action("Finishing step ...");
     $.ajax({
         url: '/update/ajax/finish_step/',
         method: 'post',
@@ -185,12 +224,16 @@ function finish_step(step_id) {
             step_id: step_id
         },
         success: function(result) {
+            show_ajax_action(JSON.stringify(result));
             if (result[0]) {
                 alert("Step finished.")
                 // TODO disable buttons here
             } else {
                 alert("Cannot finish step: "+result[1])
             }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
 }
@@ -205,13 +248,33 @@ function check_module_elb_health(step_id) {
             step_id: step_id
         },
         success: function(data) {
+            show_ajax_action(JSON.stringify(data));
             if (data) {
                 $('#spanElbState').html(
                     data[0]+"/"+data[1]+" InService"
                 );
             }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
         }
     })
+}
+
+
+function show_ajax_action(msg) {
+    var p = $("<p></p>").html(msg).addClass("ajax_message");
+    p.prependTo("#divAjaxMessage");
+}
+
+
+function show_ajax_error(xmlhttprequest, textstatus, message) {
+    console.log(message);
+    var divStatus = $("<div></div>").html("AJAX ERROR: "+textstatus);
+    var divMessage = $("<div></div>").html("Error message: "+message);
+    var p = $("<p></p>").addClass("ajax_error");
+    p.append(divStatus).append(divMessage).appendTo("#divAjaxMessage");
+
 }
 </script>
 {% endblock %}
