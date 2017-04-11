@@ -2,6 +2,7 @@ from django.conf.urls import include, url
 
 from updateplanmgr import views
 from updateplanmgr import ajax_views
+from updateplanmgr import api_views
 
 urlpatterns = [
     #url(r'^v1/$', views.v1),
@@ -29,4 +30,7 @@ urlpatterns = [
     url(r'ajax/check_module_elb_health/', ajax_views.check_module_elb_health, name='ajax.check_module_elb_health'),
 
     url(r'ajax/finish_step/', ajax_views.finish_step, name='ajax.finish_step'),
+
+    url(r'api/new_updateplan/', api_views.new_updateplan, name='api.new_updateplan'),
+    url(r'api/atomic_test/', api_views.atomic_test, name='api.atomic_test'),
 ]

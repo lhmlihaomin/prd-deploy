@@ -16,7 +16,7 @@ class AWSRegion(models.Model):
 
 class AWSProfile(models.Model):
     name = models.CharField(max_length=500)
-    regions = models.ManyToManyField(AWSRegion)
+    regions = models.ManyToManyField(AWSRegion, related_name="profiles")
     account_id = models.CharField(max_length=500, default="")
 
     # These two fields shall always be left empty unless not configured in

@@ -129,7 +129,7 @@ def make_new_version_module(profile, region, module_name, current_version, \
     try:
         new_image = get_module_image(profile, region, module_name, new_version)
     except:
-        raise Exception("ImageNotFound")
+        raise Exception("ImageNotFound: %s:%s, %s-%s"%(profile.name, region.name, module_name, new_version))
     # check for old module:
     try:
         module_old = Module.objects.get(

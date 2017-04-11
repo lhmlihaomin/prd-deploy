@@ -172,6 +172,7 @@ INSTALLED_APPS = (
     'ec2mgr',
     'elbmgr',
     'schtasks',
+    'authtoken',
 )
 
 # A sample logging configuration. The only tangible logging
