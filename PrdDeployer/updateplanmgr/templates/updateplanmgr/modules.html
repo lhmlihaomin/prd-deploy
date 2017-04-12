@@ -1,22 +1,6 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Modules in {{profile.name}}: {{region.full_name}}</title>
-        <style>
-html,body{
-    font-size: 14px;
-    font-family: Inconsolata, "Ubuntu Mono", Consolas;
-}
-table{
-    border-collapse: collapse;
-}
-th,td{
-    border: 1px solid black;
-    padding: 5px;
-}
-        </style>
-    </head>
-    <body>
+{% extends 'base.html' %}
+{% block title %}Modules in {{profile.name}}: {{region.full_name}}{% endblock %}
+{% block body %}
         <h1>Modules in {{profile.name}}: {{region.full_name}}</h1>
         <a href="/update/new_module/">New Module</a>
         <table>
@@ -49,5 +33,4 @@ th,td{
                 {% endfor %}
             </tbody>
         </table>
-    </body>
-</html>
+{% endblock %}

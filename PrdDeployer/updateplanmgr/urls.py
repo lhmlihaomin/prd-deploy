@@ -32,5 +32,4 @@ urlpatterns = [
     url(r'ajax/finish_step/', ajax_views.finish_step, name='ajax.finish_step'),
 
     url(r'api/new_updateplan/', api_views.new_updateplan, name='api.new_updateplan'),
-    url(r'api/atomic_test/', api_views.atomic_test, name='api.atomic_test'),
 ]
