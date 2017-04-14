@@ -32,7 +32,7 @@
 <p>{{ profile.name }}</p>
 <ul>
     {% for region in profile.regions.all %}
-    <li><a href="{% url 'awsresourcemgr:update_resources' profile_name=profile.name region_name=region.name %}">
+    <li><a href="{% url 'awsresourcemgr:update_resources' profile_name=profile.name region_name=region.name resource_type='all' %}">
         {{profile.name}}:{{region.name}}
     </a></li>
     {% endfor %}

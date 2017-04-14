@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource, AWSResourceHandler
 
-def update_resources(request, profile_name, region_name):
+def update_resources(request, profile_name, region_name, resource_type):
     """Update online AWS resources."""
     profile = get_object_or_404(AWSProfile, name=profile_name)
     region = get_object_or_404(AWSRegion, name=region_name)
@@ -32,7 +32,15 @@ def update_resources(request, profile_name, region_name):
     }
 
     ret = []
-    for resource_type in resource_types:
+
+    if resource_type == "all":
+        resource_types_to_update = resource_types
+    else:
+        if resource_type not in resource_types:
+            return HttpResponse("Unknown resource type: %s"%(resource_type,), status=400)
+        resource_types_to_update = (resource_type,)
+
+    for resource_type in resource_types_to_update:
         # look for "update_xxx" method in AWSResourceHandler object:
         func = getattr(arh, "update_"+resource_type)
         # make request:

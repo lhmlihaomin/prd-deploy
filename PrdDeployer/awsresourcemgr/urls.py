@@ -4,7 +4,7 @@ from awsresourcemgr import views
 
 urlpatterns = [
     url(
-        r'update_resources/(?P<profile_name>[a-zA-Z0-9-]+)/(?P<region_name>[a-zA-Z0-9-]+)/$',
+        r'update_resources/(?P<profile_name>[a-zA-Z0-9-]+)/(?P<region_name>[a-zA-Z0-9-]+)/(?P<resource_type>.+)/$',
         views.update_resources,
         name="update_resources"
     ),
