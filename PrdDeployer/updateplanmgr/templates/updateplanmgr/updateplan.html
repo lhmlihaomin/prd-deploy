@@ -120,10 +120,12 @@ function add_module_volume_tags(step_id, instance_ids) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
         }
     })
 }

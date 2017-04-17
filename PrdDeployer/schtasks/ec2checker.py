@@ -134,10 +134,7 @@ class EC2Checker(object):
         return self.cmd_process(process_name)
 
     def cmd_nohup_output(self, name, version):
-        if name == "connector":
-            substr = "service start success"
-        else:
-            substr = "cloud-%s service started"%(name,)
+        substr = "cloud-%s service started"%(name,)
         filepath = os.path.sep.join([
             "~",
             "cloud-"+name,
@@ -330,7 +327,7 @@ class CheckRunner(threading.Thread):
                 print("\t"+cmds[i])
             print("\r\n\r\n")
             return False
-        results = self.ec2checker.perform_check()
+        results = self.ec2checker.run_checks()
         self.ec2checker.save_results(results)
         return True
 
