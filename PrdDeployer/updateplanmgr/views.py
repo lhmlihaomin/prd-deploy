@@ -157,7 +157,8 @@ def make_new_version_module(profile, region, module_name, current_version, \
             profile=module_old.profile,
             region=module_old.region,
             current_version=new_version,
-            previous_version=module_old.current_version
+            previous_version=module_old.current_version,
+            service_type=module_old.service_type
         )
         # edit new values:
         if instance_count is None:

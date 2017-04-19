@@ -73,7 +73,7 @@ function run_module_ec2(step_id) {
             step_id: step_id
         },
         success: function(instance_ids) {
-            show_ajax_action(instance_ids);
+            show_ajax_action(JSON.stringify(instance_ids));
             console.log(instance_ids);
             add_module_ec2_tags(step_id, instance_ids);
         },
@@ -185,10 +185,12 @@ function reg_module_elb(step_id) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
         }
     })
 }
@@ -206,10 +208,12 @@ function dereg_module_elb(step_id) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
         }
     })
 }
