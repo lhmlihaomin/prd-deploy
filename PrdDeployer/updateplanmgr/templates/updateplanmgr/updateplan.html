@@ -282,5 +282,13 @@ function show_ajax_error(xmlhttprequest, textstatus, message) {
     p.append(divStatus).append(divMessage).appendTo("#divAjaxMessage");
 
 }
+
+$(document).on("keypress", 'form', function (e) {
+    var code = e.keyCode || e.which;
+    if (code == 13) {
+        e.preventDefault();
+        return false;
+    }
+});
 </script>
 {% endblock %}

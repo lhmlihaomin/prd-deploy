@@ -6,3 +6,5 @@ done 4. Read "service_type" from module object instead of config file;
 5. register/DEREGISTER instances even if they're not launched from this app;
 done 6. Add page feed back when sending AJAX requests.
 7. Add API views. (Consider using django REST framework)
+8. Register only "ok" instances with ELB;
+9. Copy configuration from existing module;
