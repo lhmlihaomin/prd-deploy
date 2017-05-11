@@ -19,7 +19,7 @@
             <th>Load Balancers</th>
             <th>ELB State</th>
             <th>Load Balancer Actions</th>
-            <th>Mark as Finished</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -51,6 +51,7 @@
             </td>
             <td>
                 <button onclick="finish_step({{step.id}})">Mark</button>
+                <a target="_blank" href="{% url 'updateplanmgr:edit_module_json' step.module.id %}">Edit JSON</a>
             </td>
         </tr>
         {% endfor %}

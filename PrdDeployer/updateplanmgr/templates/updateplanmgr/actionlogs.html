@@ -19,7 +19,7 @@
     {% for log in loginfo.2 %}
         <tbody>
             <tr>
-                <td>{{log.timestamp}}</td>
+                <td>{{log.timestamp|date:"Y-m-d H:i:s"}}</td>
                 <td>{{log.user.username}}</td>
                 <td>{{log.source_ip}}</td>
                 <td>{{log.action}}</td>
