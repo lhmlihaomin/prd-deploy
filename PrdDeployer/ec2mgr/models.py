@@ -20,6 +20,13 @@ class EC2Instance(models.Model):
 
     vpc_id = models.CharField(max_length=500, default="")
 
+
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return unicode(self.name)
+
     def load_boto3_instance(self, instance):
         """Get info from a boto3.ec2.Instance"""
         self.name = get_resource_name(instance)
