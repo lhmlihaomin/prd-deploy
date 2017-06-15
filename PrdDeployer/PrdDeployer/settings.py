@@ -233,3 +233,5 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 PEM_DIR = os.path.expanduser('~')+os.path.sep+'pem'
 RUN_TIMEOUT = 300
 STOP_TIMEOUT = 300
+
+ALLOWED_HOSTS = ["*", ]
