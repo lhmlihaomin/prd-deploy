@@ -33,7 +33,7 @@ def run_instances(ec2res, optionset, count):
     # check security group settings:
     if opset.has_key('security_group_names'):
         security_group_ids = get_security_group_ids_by_name(
-            ec2res, 
+            ec2res,
             opset['vpc'][1],
             opset['security_group_names']
         )
@@ -54,6 +54,7 @@ def run_instances(ec2res, optionset, count):
             MinCount=count,
             MaxCount=count,
             SecurityGroupIds=security_group_ids,
+            # TODO: handle insufficient IP address error:
             SubnetId=opset['subnets'][0][1],
         )
         return instances
@@ -117,7 +118,7 @@ def add_instance_tags(ec2res, optionset, instance_ids):
                 'Value': tags[key]
             })
         num += 1
-        
+
         try:
             #instance = ec2res.Instance(instance_id)
             instance.create_tags(
@@ -161,8 +162,8 @@ def add_volume_tags(ec2res, instance_ids):
 def get_instances_for_ec2launchoptionset(ec2res, optionset):
     def name_cmp(x, y):
         """Compare instance names.
-        
-        For modules with +10 instances, string length needs to be considered, 
+
+        For modules with +10 instances, string length needs to be considered,
         otherwise 'xxx-9' will be greater than 'xxx-10'."""
         len_x = len(x)
         len_y = len(y)
@@ -205,9 +206,9 @@ def get_instances_for_ec2launchoptionset(ec2res, optionset):
 
 def get_security_group_ids_by_name(ec2res, vpc_id, names):
     """Find security groups with the given names and return their ids.
-    
+
     AWS does not allow the use of security group names outside the default VPC
-    when launching EC2 instances. So group names must be converted to ids 
+    when launching EC2 instances. So group names must be converted to ids
     before calling run_instances."""
     filter_vpc = {
         'Name': 'vpc-id',

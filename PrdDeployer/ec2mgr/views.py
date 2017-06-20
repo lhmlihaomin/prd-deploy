@@ -58,7 +58,6 @@ def sync_instances_ex(request, profile_name, region_name):
     boto3session = profile.get_session(region)
     ec2res = boto3session.resource('ec2')
     # clear ec2instances that don't belong to any module:
-    # TODO
 
     ret = []
     for module in Module.objects.filter(profile=profile,region=region):
@@ -146,7 +145,7 @@ def instances(request):
     region_name = request.GET.get('region_name')
     module_name = request.GET.get('module')
     online_version = request.GET.get('online')
-    
+
     # handle form post if any:
     if request.method == "POST":
         ec2instance = get_object_or_404(EC2Instance, pk=request.POST.get('id'))
