@@ -191,11 +191,23 @@ def new_updateplan(request):
             action="new_updateplan"
         )
         # create plan:
-        start_time = request.POST.get('start_time')
-        fmt = "%Y-%m-%d %H:%M:%S"
-        start_time = datetime.strptime(start_time, fmt)
+        str_start_time = request.POST.get('start_time')
         tz = pytz.timezone(settings.TIME_ZONE)
-        start_time = tz.localize(start_time)
+        start_time = tz.localize(datetime.now())
+        # try different formats of datetime:
+        formats = (
+            "%Y-%m-%d %H:%M:%S",
+            "%Y%m%d%H%M%S",
+            "%Y%m%d"
+        )
+        for fmt in formats:
+            try:
+                parsed_start_time = datetime.strptime(str_start_time, fmt)
+                parsed_start_time = tz.localize(parsed_start_time)
+                start_time = parsed_start_time
+                break
+            except:
+                continue
         plan = UpdatePlan(
             project_name=request.POST.get('project_name'),
             project_code=request.POST.get('project_code'),

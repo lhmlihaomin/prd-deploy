@@ -210,8 +210,29 @@ function MakeStepRow() {
         $('<input />').prop('type', 'text')
                       .prop('name', 'numberOfInstances['+stepCount+']')
     )
+    $('#tdStepDelete_'+stepCount).append(
+        $('<button>Delete</button>').prop('type', 'button')
+                                    .click(function(stepCount){
+                                        return function() {
+                                            DelStepRow(stepCount);
+                                        }
+                                    }(stepCount))
+    )
     stepCount += 1;
     $('#iStepCount').val(stepCount);
+}
+
+function DelStepRow(stepNum) {
+    if (stepNum == stepCount - 1) {
+        console.log("Delete row on "+stepNum);
+        stepCount -= 1;
+        $('#iStepCount').val(stepCount);
+        $('#tdStepDelete_'+stepNum).parent().remove();
+        return true;
+    } else {
+        alert("Please delete from the back.");
+        return false;
+    }
 }
 
 $(document).ready(function(){
