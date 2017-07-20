@@ -7,17 +7,20 @@ User will need to refresh the webpage to see the latest instance status.
 Usage: python stop_ec2_instances.py <instance_id_1> <instance_id_2> ...
 """
 
+import sys
+import os
 import django
+import threading
 
 # Initialize django environment:
 sys.path.append(os.path.abspath(__file__))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
-import threading
+from ec2mgr.models import EC2Instance
 
 class StopInstanceWorker(threading.Thread):
-    def __init__(self):
+    def __init__(self, ec2_instance):
         """Read module info and init SSH connection."""
         threading.Thread.__init__(self)
         pass
@@ -45,8 +48,17 @@ class StopInstanceWorker(threading.Thread):
 
 
 def main():
-    # parse arguments:
+    try:
+        # parse arguments:
+        ec2_instance_ids = sys.argv[1:]
+        if len(ec2_instance_ids) == 0:
+            print("Usage: python stop_ec2_instances.py <instance_id_1> <instance_id_2> ...")
+            sys.exit(1)
+    except Exception as ex:
+        print("Usage: python stop_ec2_instances.py <instance_id_1> <instance_id_2> ...")
+        sys.exit(1)
     # read instance and module information:
+    ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
     # init StopInstanceWorkers:
     # start workers:
     # wait for workers to join:
