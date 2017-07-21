@@ -86,3 +86,29 @@ class EC2Instance(models.Model):
             }
         else:
             raise Exception("Unknown service type: "+module.service_type)
+
+    @property
+    def stop_command(self):
+        module = self.modules.first()
+        if module is None:
+            raise Exception("Module not found.")
+        if module.service_type == 'java':
+            service_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                '-'.join(['cloud', module.name, module.current_version]),
+                'bin'
+            ])
+            return "/bin/bash %s/stop.sh"%(service_bin_dir,)
+        elif module.service_type == 'tomcat':
+            tomcat_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                'tomcat',
+                'bin'
+            ])
+            cmd = "cd %s&&/bin/bash ./shutdown.sh"%(tomcat_bin_dir,)
+        else:
+            raise Exception("Unknown service type: "+module.service_type)

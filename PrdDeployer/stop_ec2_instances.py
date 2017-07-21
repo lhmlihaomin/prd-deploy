@@ -11,6 +11,7 @@ import sys
 import os
 import django
 import threading
+import time
 
 # Initialize django environment:
 sys.path.append(os.path.abspath(__file__))
@@ -26,30 +27,71 @@ class StopInstanceWorker(threading.Thread):
         threading.Thread.__init__(self)
         self.instance = ec2_instance
         self.key_path = key_path
+        self.ssh = None
 
     def connect_ssh(self):
-        self.ssh = SshHandler(self.instance, self.key_path)
+        if self.ssh is None:
+            self.ssh = SshHandler(self.instance, self.key_path)
+
+    def disconnect_ssh(self):
+        if self.ssh is not None:
+            self.ssh.close()
 
     def stop_service(self):
         """Stop service process."""
-        # get service type:
-        # assemble stop script path:
         # assemble stop command:
-        # run stop command:
-        # command succeeded: return true
-        # command failed: return false and error
-        pass
+        try:
+            exit_code, output, err = self.ssh.run(self.instance.stop_command)
+            if exit_code != 0:
+                return False
+        except:
+            return False
+        return True
 
     def upload_final_logs(self):
-        """Package remaining logs and wait for upload."""
+        """Package remaining logs and initiate upload."""
+        log_script_path = "~"
+        log_script = "logpackage.py"
         # run command and wait for it to finish:
+        #self.ssh.run(self.instance.stop_command)
+        cmd = "cd %s&&python %s true"%(log_script_path, log_script)
+        try:
+            exit_code, output, err = self.ssh.run(cmd)
+        except:
+            return False
         # sleep (a magical) 10 seconds:
-        pass
+        time.sleep(10))
+        return True
 
     def shutdown_instance(self):
-        """Poweroff the instance."""
-        # run shutdown command with a delay:
-        pass
+        """Shut down the instance."""
+        # run shutdown command with a delay, so that we have time to 
+        # disconnect from the machine:
+        cmd = "sudo shutdown +1"
+        try:
+            exit_code, output, err = self.ssh.run(cmd)
+            if exit_code != 0:
+                return False
+        except:
+            return False
+        return True
+
+
+    def run(self):
+        self.connect_ssh()
+        if not self.stop_service():
+            # write error:
+            pass
+            return False
+        if not self.upload_final_logs():
+            # write error:
+            pass
+            return False
+        if not self.shutdown_instance():
+            # write error:
+            pass
+            return False
+        return True
 
 
 def main():
@@ -63,9 +105,15 @@ def main():
         print("Usage: python stop_ec2_instances.py <instance_id_1> <instance_id_2> ...")
         sys.exit(1)
     # read instance and module information:
-    ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
+    #ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
+    ec2_instances = EC2Instance.objects.all()
     for ec2_instance in ec2_instances:
-        print(ec2_instance.name, ec2_instance.id)
+        print("===== %s ====="%(ec2_instance.name))
+        worker = StopInstanceWorker(ec2_instance, '/home/ubuntu/pem/')
+        worker.stop_service()
+        worker.upload_final_logs()
+        worker.shutdown_instance()
+        print("-------------------------------------")
     # init StopInstanceWorkers:
     # start workers:
     # wait for workers to join:
