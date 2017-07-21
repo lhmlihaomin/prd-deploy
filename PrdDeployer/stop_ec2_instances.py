@@ -59,6 +59,8 @@ def main():
         sys.exit(1)
     # read instance and module information:
     ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
+    for ec2_instance in ec2_instances:
+        print(ec2_instance.name, ec2_instance.id)
     # init StopInstanceWorkers:
     # start workers:
     # wait for workers to join:
