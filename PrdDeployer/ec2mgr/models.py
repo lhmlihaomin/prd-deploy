@@ -48,6 +48,8 @@ class EC2Instance(models.Model):
     @property
     def service_scripts(self):
         module = self.modules.first()
+        if module is None:
+            raise Exception("Module not found.")
         if module.service_type == 'java':
             service_bin_dir = "/"+"/".join([
                 'home',

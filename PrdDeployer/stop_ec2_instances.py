@@ -18,12 +18,17 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
 from ec2mgr.models import EC2Instance
+from schtasks.ssh import SshHandler
 
 class StopInstanceWorker(threading.Thread):
-    def __init__(self, ec2_instance):
+    def __init__(self, ec2_instance, key_path):
         """Read module info and init SSH connection."""
         threading.Thread.__init__(self)
-        pass
+        self.instance = ec2_instance
+        self.key_path = key_path
+
+    def connect_ssh(self):
+        self.ssh = SshHandler(self.instance, self.key_path)
 
     def stop_service(self):
         """Stop service process."""
