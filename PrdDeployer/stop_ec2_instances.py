@@ -57,17 +57,19 @@ class StopInstanceWorker(threading.Thread):
         cmd = "cd %s&&python %s true"%(log_script_path, log_script)
         try:
             exit_code, output, err = self.ssh.run(cmd)
+            if exit_code != 0:
+                return False
         except:
             return False
         # sleep (a magical) 10 seconds:
-        time.sleep(10))
+        #time.sleep(10)
         return True
 
     def shutdown_instance(self):
         """Shut down the instance."""
         # run shutdown command with a delay, so that we have time to 
         # disconnect from the machine:
-        cmd = "sudo shutdown +1"
+        cmd = "sudo shutdown -P +1"
         try:
             exit_code, output, err = self.ssh.run(cmd)
             if exit_code != 0:
@@ -79,17 +81,20 @@ class StopInstanceWorker(threading.Thread):
 
     def run(self):
         self.connect_ssh()
-        if not self.stop_service():
-            # write error:
-            pass
+        result = self.stop_service()
+        if not result:
+            # write error
+            print("stop service failed")
             return False
-        if not self.upload_final_logs():
-            # write error:
-            pass
+        result = self.upload_final_logs()
+        if not result:
+            # write error
+            print("upload log failed")
             return False
-        if not self.shutdown_instance():
+        result = self.shutdown_instance()
+        if not result:
             # write error:
-            pass
+            print("shutdown failed")
             return False
         return True
 
@@ -105,14 +110,12 @@ def main():
         print("Usage: python stop_ec2_instances.py <instance_id_1> <instance_id_2> ...")
         sys.exit(1)
     # read instance and module information:
-    #ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
-    ec2_instances = EC2Instance.objects.all()
+    ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
+    #ec2_instances = EC2Instance.objects.all()
     for ec2_instance in ec2_instances:
         print("===== %s ====="%(ec2_instance.name))
         worker = StopInstanceWorker(ec2_instance, '/home/ubuntu/pem/')
-        worker.stop_service()
-        worker.upload_final_logs()
-        worker.shutdown_instance()
+        worker.start()
         print("-------------------------------------")
     # init StopInstanceWorkers:
     # start workers:
