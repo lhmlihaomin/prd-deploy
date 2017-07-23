@@ -38,6 +38,7 @@ class StopInstanceWorker(threading.Thread):
             self.ssh.close()
 
     def stop_service(self):
+        return True
         """Stop service process."""
         # assemble stop command:
         try:
@@ -49,6 +50,7 @@ class StopInstanceWorker(threading.Thread):
         return True
 
     def upload_final_logs(self):
+        return True
         """Package remaining logs and initiate upload."""
         log_script_path = "~"
         log_script = "logpackage.py"
@@ -66,6 +68,7 @@ class StopInstanceWorker(threading.Thread):
         return True
 
     def shutdown_instance(self):
+        return True
         """Shut down the instance."""
         # run shutdown command with a delay, so that we have time to 
         # disconnect from the machine:
@@ -84,18 +87,30 @@ class StopInstanceWorker(threading.Thread):
         result = self.stop_service()
         if not result:
             # write error
-            print("stop service failed")
+            self.instance.service_status = "error"
+            self.instance.note = "Failed to stop service."
+            self.instance.save()
             return False
+        else:
+            self.instance.service_status = "stopped"
+            self.instance.save()
         result = self.upload_final_logs()
         if not result:
             # write error
-            print("upload log failed")
+            self.instance.service_status = "error"
+            self.instance.note = "Failed to upload log."
+            self.instance.save()
             return False
         result = self.shutdown_instance()
         if not result:
             # write error:
-            print("shutdown failed")
+            self.instance.running_state = "error"
+            self.instance.note = "Failed to shutdown instance."
+            self.instance.save()
             return False
+        else:
+            self.instance.running_state = "stopping"
+            self.instance.save()
         return True
 
 
