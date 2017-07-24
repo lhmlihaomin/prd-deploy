@@ -234,8 +234,8 @@ def stop_module_previous_ec2(request):
     cmd = [
         'python',
         stop_script,
-        ' '.join(ids)
     ]
+    cmd += ids
     subprocess.Popen(cmd)
     return JSONResponse(True)
 

@@ -38,11 +38,13 @@ class StopInstanceWorker(threading.Thread):
             self.ssh.close()
 
     def stop_service(self):
-        return True
         """Stop service process."""
         # assemble stop command:
+        cmd = self.instance.stop_command
+        print(cmd)
         try:
-            exit_code, output, err = self.ssh.run(self.instance.stop_command)
+            exit_code, output, err = self.ssh.run(cmd)
+            print(exit_code)
             if exit_code != 0:
                 return False
         except:
@@ -50,15 +52,16 @@ class StopInstanceWorker(threading.Thread):
         return True
 
     def upload_final_logs(self):
-        return True
         """Package remaining logs and initiate upload."""
         log_script_path = "~"
         log_script = "logpackage.py"
         # run command and wait for it to finish:
         #self.ssh.run(self.instance.stop_command)
         cmd = "cd %s&&python %s true"%(log_script_path, log_script)
+        print(cmd)
         try:
             exit_code, output, err = self.ssh.run(cmd)
+            print(exit_code)
             if exit_code != 0:
                 return False
         except:
@@ -68,13 +71,14 @@ class StopInstanceWorker(threading.Thread):
         return True
 
     def shutdown_instance(self):
-        return True
         """Shut down the instance."""
         # run shutdown command with a delay, so that we have time to 
         # disconnect from the machine:
-        cmd = "sudo shutdown -P +1"
+        cmd = "sudo shutdown -P +1 &"
+        print(cmd)
         try:
             exit_code, output, err = self.ssh.run(cmd)
+            print(exit_code)
             if exit_code != 0:
                 return False
         except:
@@ -84,6 +88,7 @@ class StopInstanceWorker(threading.Thread):
 
     def run(self):
         self.connect_ssh()
+        print("stopping service ...")
         result = self.stop_service()
         if not result:
             # write error
@@ -94,6 +99,7 @@ class StopInstanceWorker(threading.Thread):
         else:
             self.instance.service_status = "stopped"
             self.instance.save()
+        print("uploading logs ...")
         result = self.upload_final_logs()
         if not result:
             # write error
@@ -101,7 +107,9 @@ class StopInstanceWorker(threading.Thread):
             self.instance.note = "Failed to upload log."
             self.instance.save()
             return False
+        print("shutting down ...")
         result = self.shutdown_instance()
+        print(result)
         if not result:
             # write error:
             self.instance.running_state = "error"
