@@ -1,6 +1,8 @@
+import os
 import json
 from datetime import datetime
 import logging
+import subprocess
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -213,13 +215,29 @@ def stop_module_previous_ec2(request):
     #if step.finished:
     #    return JSONResponse(False)
     module = step.module
-    #module = get_object_or_404(Module, pk=request.POST.get('module_id'))
     module = module.previous_module
-    session = module.profile.get_session(module.region)
-    ec2res = session.resource('ec2')
-    ret = module.mark_instances_for_stopping()
-    #ret = stop_module_ec2_instances(ec2res, module)
-    return JSONResponse(ret)
+    instances = module.instances.all()
+    # EC2Instance database ids:
+    ids = [str(instance.id) for instance in instances]
+    # Script path:
+    stop_script = os.path.sep.join([
+        os.path.abspath(
+            os.path.sep.join([
+                os.path.dirname(
+                    os.path.abspath(__file__)
+                ),
+                '..'
+            ])
+        ),
+        'stop_ec2_instances.py'
+    ])
+    cmd = [
+        'python',
+        stop_script,
+        ' '.join(ids)
+    ]
+    subprocess.Popen(cmd)
+    return JSONResponse(True)
 
 
 @login_required

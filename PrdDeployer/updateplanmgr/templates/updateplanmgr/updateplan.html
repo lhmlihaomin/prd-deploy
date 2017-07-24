@@ -155,7 +155,7 @@ function stop_module_ec2(step_id) {
 
 function stop_module_previous_ec2(step_id) {
     if (!confirm("Stop old instances?")) return;
-    show_ajax_action("Marking previous version instances as 'to_stop' ...");
+    show_ajax_action("Stopping ... Use [Check EC2 Status] to see latest status.");
     $.ajax({
         url: '/update/ajax/stop_module_previous_ec2/',
         method: 'post',
