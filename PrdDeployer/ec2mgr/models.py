@@ -45,3 +45,70 @@ class EC2Instance(models.Model):
         self.service_status = "not_ready"
         self.note = "Instance just started."
 
+    @property
+    def service_scripts(self):
+        module = self.modules.first()
+        if module is None:
+            raise Exception("Module not found.")
+        if module.service_type == 'java':
+            service_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                '-'.join(['cloud', module.name, module.current_version]),
+                'bin'
+            ])
+            return {
+                'start': '/'.join([service_bin_dir, 'start.sh']),
+                'stop': '/'.join([service_bin_dir, 'stop.sh']),
+                'status': '/'.join([service_bin_dir, 'status.sh']),
+            }
+        elif module.service_type == 'tomcat':
+            tomcat_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                'tomcat',
+                'bin'
+            ])
+            service_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                '-'.join(['cloud', module.name, module.current_version]),
+                'WEB-INF',
+                'classes'
+            ])
+            return {
+                'start': '/'.join([tomcat_bin_dir, 'startup.sh']),
+                'stop': '/'.join([tomcat_bin_dir, 'shutdown.sh']),
+                'status': '/'.join([service_bin_dir, 'status.sh']),
+            }
+        else:
+            raise Exception("Unknown service type: "+module.service_type)
+
+    @property
+    def stop_command(self):
+        module = self.modules.first()
+        if module is None:
+            raise Exception("Module not found.")
+        if module.service_type == 'java':
+            service_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                '-'.join(['cloud', module.name, module.current_version]),
+                'bin'
+            ])
+            return "/bin/bash %s/stop.sh"%(service_bin_dir,)
+        elif module.service_type == 'tomcat':
+            tomcat_bin_dir = "/"+"/".join([
+                'home',
+                self.username,
+                '-'.join(['cloud', module.name]),
+                'tomcat',
+                'bin'
+            ])
+            cmd = "cd %s&&/bin/bash ./shutdown.sh"%(tomcat_bin_dir,)
+        else:
+            raise Exception("Unknown service type: "+module.service_type)
