@@ -148,6 +148,9 @@ def make_new_version_module(profile, region, module_name, current_version, \
             name=module_name,
             current_version=new_version
         )
+        # set new count when scaling out:
+        if module.instance_count != instance_count:
+            module.instance_count = instance_count
         return module
     except:
         # create new module:
