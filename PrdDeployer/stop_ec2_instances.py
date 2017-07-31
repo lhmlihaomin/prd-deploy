@@ -72,7 +72,7 @@ class StopInstanceWorker(threading.Thread):
 
     def shutdown_instance(self):
         """Shut down the instance."""
-        # run shutdown command with a delay, so that we have time to 
+        # run shutdown command with a delay, so that we have time to
         # disconnect from the machine:
         cmd = "sudo shutdown -P +1 &"
         print(cmd)
