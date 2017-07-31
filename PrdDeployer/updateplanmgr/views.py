@@ -148,9 +148,10 @@ def make_new_version_module(profile, region, module_name, current_version, \
             name=module_name,
             current_version=new_version
         )
-        # set new count when scaling out:
-        if module.instance_count != instance_count:
+        # set new count when scaling out/in:
+        if module.instance_count != instance_count and instance_count != 0:
             module.instance_count = instance_count
+        module.save()
         return module
     except:
         # create new module:
@@ -164,7 +165,7 @@ def make_new_version_module(profile, region, module_name, current_version, \
             service_type=module_old.service_type
         )
         # edit new values:
-        if instance_count is None:
+        if instance_count is None or instance_count == 0:
             module.instance_count = module_old.instance_count
         else:
             module.instance_count = instance_count
@@ -228,13 +229,18 @@ def new_updateplan(request):
         for i in range(stepCount):
             profile_name = request.POST.get('profile['+str(i)+']')
             region_name = request.POST.get('region['+str(i)+']')
+            instance_count = request.POST.get('numberOfInstances['+str(i)+']')
+            if instance_count == '':
+                instance_count = None
+            else:
+                instance_count = int(instance_count)
             module = make_new_version_module(
                 AWSProfile.objects.get(name=profile_name),
                 AWSRegion.objects.get(name=region_name),
                 request.POST.get('module['+str(i)+']'),
                 request.POST.get('currentVersion['+str(i)+']'),
                 request.POST.get('newVersion['+str(i)+']'),
-                int(request.POST.get('numberOfInstances['+str(i)+']'))
+                int()
             )
             module.save()
             step = UpdateStep(
