@@ -240,7 +240,7 @@ def new_updateplan(request):
                 request.POST.get('module['+str(i)+']'),
                 request.POST.get('currentVersion['+str(i)+']'),
                 request.POST.get('newVersion['+str(i)+']'),
-                int()
+                instance_count
             )
             module.save()
             step = UpdateStep(
