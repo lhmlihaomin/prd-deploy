@@ -165,7 +165,7 @@ def make_new_version_module(profile, region, module_name, current_version, \
             service_type=module_old.service_type
         )
         # edit new values:
-        if instance_count is None or instance_count == 0:
+        if instance_count == 0:
             module.instance_count = module_old.instance_count
         else:
             module.instance_count = instance_count
@@ -230,10 +230,10 @@ def new_updateplan(request):
             profile_name = request.POST.get('profile['+str(i)+']')
             region_name = request.POST.get('region['+str(i)+']')
             instance_count = request.POST.get('numberOfInstances['+str(i)+']')
-            if instance_count == '':
-                instance_count = None
-            else:
-                instance_count = int(instance_count)
+            try:
+                instance_count = int(instance_count):
+            except:
+                instance_count = 0
             module = make_new_version_module(
                 AWSProfile.objects.get(name=profile_name),
                 AWSRegion.objects.get(name=region_name),
