@@ -231,7 +231,7 @@ def new_updateplan(request):
             region_name = request.POST.get('region['+str(i)+']')
             instance_count = request.POST.get('numberOfInstances['+str(i)+']')
             try:
-                instance_count = int(instance_count):
+                instance_count = int(instance_count)
             except:
                 instance_count = 0
             module = make_new_version_module(
