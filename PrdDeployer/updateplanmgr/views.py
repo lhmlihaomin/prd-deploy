@@ -251,10 +251,6 @@ def new_updateplan(request):
             step.save()
             plan.steps.add(step)
         return HttpResponseRedirect(reverse('updateplanmgr:updateplan', args=(plan.id,)))
-        return HttpResponse(
-            json.dumps(request.POST, indent=2),
-            content_type="application/json"
-        )
     else:
         awsprofiles = []
         awsregions = {}
@@ -270,9 +266,12 @@ def new_updateplan(request):
                 modules.update({
                     module_key: []
                 })
+                #for module in Module.objects\
+                #    .filter(profile=awsprofile, region=awsregion)\
+                #    .order_by('name', '-current_version'):
                 for module in Module.objects\
                     .filter(profile=awsprofile, region=awsregion)\
-                    .order_by('name', '-current_version'):
+                    .order_by('name', '-id'):
                     modules[module_key].append(module.to_dict())
 
 

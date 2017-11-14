@@ -265,6 +265,7 @@ def reg_module_elb(request):
     )
     ret = {}
     for LoadBalancerName in module.load_balancer_names.split(','):
+        LoadBalancerName = LoadBalancerName.strip()
         try:
             elbclient.register_instances_with_load_balancer(
                 LoadBalancerName=LoadBalancerName,
