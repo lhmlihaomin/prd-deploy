@@ -36,5 +36,5 @@ urlpatterns = [
 
     url(r'accounts/login/', login,
         {'template_name': 'admin/login.html'}),
-    url(r'accounts/logout/', logout),
+    url(r'accounts/logout/', logout, name='logout'),
 ]

@@ -27,9 +27,10 @@ logger = logging.getLogger('common')
 def index(request):
     profiles = AWSProfile.objects.all()
     context = {
+        'title': "Home",
         'profiles': profiles
     }
-    return render(request, 'updateplanmgr/index.html', context=context)
+    return render(request, 'updateplanmgr/index_ace.html', context=context)
 
 
 @login_required
@@ -42,11 +43,12 @@ def modules(request, profile_name, region_name):
         .order_by("name", "-current_version")
 
     context = {
+        'title': "Modules",
         'profile': profile,
         'region': region,
         'modules': modules
     }
-    return render(request, 'updateplanmgr/modules.html', context)
+    return render(request, 'updateplanmgr/modules_ace.html', context)
 
 
 @login_required
@@ -79,26 +81,29 @@ def edit_module_json(request, module_id):
                 ))
             except:
                 context = {
+                    'title': "Edit Module",
                     'message': 'Bad JSON text.',
                     'module': module,
                     'json': text
                 }
-                return render(request, 'updateplanmgr/edit_module_json.html', context)
+                return render(request, 'updateplanmgr/edit_module_json_ace.html', context)
     else:
         context = {
+            'title': "Edit Module",
             'module': module,
             'json': module.configuration
         }
-        return render(request, 'updateplanmgr/edit_module_json.html', context)
+        return render(request, 'updateplanmgr/edit_module_json_ace.html', context)
 
 
 @login_required
 def updateplans(request):
     plans = UpdatePlan.objects.all()
     context = {
+        'title': "Update Plans",
         'plans': plans
     }
-    return render(request, 'updateplanmgr/updateplans.html', context)
+    return render(request, 'updateplanmgr/updateplans_ace.html', context)
 
 
 @login_required
@@ -106,10 +111,11 @@ def updateplan(request, plan_id):
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
     context = {
+        'title': "UpdatePlan",
         'plan': plan,
         'steps': steps
     }
-    return render(request, 'updateplanmgr/updateplan.html', context)
+    return render(request, 'updateplanmgr/updateplan_ace.html', context)
 
 
 def get_module_image(profile, region, module_name, version):
@@ -276,11 +282,12 @@ def new_updateplan(request):
 
 
         context = {
+            'title': "New Updateplan",
             'awsprofiles_json': json.dumps(awsprofiles),
             'awsregions_json': json.dumps(awsregions),
             'modules_json': json.dumps(modules, indent=2),
         }
-        return render(request, "updateplanmgr/new_updateplan.html", context)
+        return render(request, "updateplanmgr/new_updateplan_ace.html", context)
 
 
 @login_required
@@ -340,10 +347,11 @@ def new_module(request):
     profiles = AWSProfile.objects.all()
     regions = AWSRegion.objects.all()
     context = {
+        'title': "New Module",
         'profiles': profiles,
         'regions': regions,
     }
-    return render(request, 'updateplanmgr/new_module.html', context)
+    return render(request, 'updateplanmgr/new_module_ace.html', context)
 
 
 @login_required
@@ -369,6 +377,7 @@ def instances_summary(request, plan_id):
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
     context = {
+        'title': "Instances Summary",
         'plan': plan,
         'steps': []
     }
@@ -390,7 +399,7 @@ def instances_summary(request, plan_id):
             'instances': instances,
             'prev_instances': prev_instances
         })
-    return render(request, 'updateplanmgr/instances_summary.html', context=context)
+    return render(request, 'updateplanmgr/instances_summary_ace.html', context=context)
 
 
 @login_required
@@ -399,6 +408,7 @@ def elb_summary(request, plan_id):
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
     context = {
+        'title': "ELB Summary",
         'plan': plan,
         'elb_states': []
     }
@@ -433,7 +443,7 @@ def elb_summary(request, plan_id):
                     'instance_states': instance_states
                 })
     context['elb_states'] = elb_states
-    return render(request, 'updateplanmgr/elb_summary.html', context=context)
+    return render(request, 'updateplanmgr/elb_summary_ace.html', context=context)
 
 
 @login_required
@@ -453,7 +463,10 @@ def actionlogs(request, plan_id):
         )
         logs.append([step.sequence, step.module.__unicode__(), actionlogs])
     context = {
+        'title': "Action Logs",
         'plan': plan,
         'logs': logs
     }
-    return render(request, 'updateplanmgr/actionlogs.html', context=context)
+    return render(request, 'updateplanmgr/actionlogs_ace.html', context=context)
+
+    

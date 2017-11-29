@@ -1,0 +1,238 @@
+{% extends 'layout.html' %}
+{% block body %}
+<form class="form-horizontal" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Name</label>
+        <div class="col-sm-9">
+            <input data-toggle="tooltip" data-rel="tooltip" title="hello" id="iName" class="col-xs-10 col-sm-5" name="name" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="selProfile">Profile</label>
+        <div class="col-sm-9">
+            <select id="selProfile" name="profile_name">
+                {%for profile in profiles%}
+                <option value="{{profile.name}}">{{profile.name}}</option>
+                {%endfor%}
+            </select>
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label for="selRegion" class="col-sm-3 control-label no-padding-right">Region</label>
+        <div class="col-sm-9">
+            <select id="selRegion" name="region_name">
+                {%for region in regions%}
+                <option value="{{region.name}}">{{region.name}}</option>
+                {%endfor%}
+            </select>
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iCurrentVersion">Version</label>
+        <div class="col-sm-9">
+            <input id="iCurrentVersion" class="col-xs-10 col-sm-5" name="current_version" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iPreviousVersion">Previous Version</label>
+        <div class="col-sm-9">
+            <input id="iPreviousVersion" class="col-xs-10 col-sm-5" name="previous_version" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iInstanceCount">Instance Count</label>
+        <div class="col-sm-9">
+            <input type="number" id="iInstanceCount" class="col-xs-10 col-sm-5" name="instance_count" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right">Configuration JSON</label>
+        <div class="col-sm-9">
+            <textarea class="col-xs-10 col-sm-5" style="height:20em;font-family:Consolas" name="configuration" type="text"></textarea>
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iLoadBalancerNames">Load Balancer Names</label>
+        <div class="col-sm-9">
+            <input id="iLoadBalancerNames" class="col-xs-10 col-sm-5" name="load_balancer_names" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iServiceType">Service Type</label>
+        <div class="col-sm-9">
+            <input id="iServiceType" class="col-xs-10 col-sm-5" name="service_type" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+    <div class="clearfix form-actions">
+        <div class="col-md-offset-3 col-md-9">
+            <button class="btn btn-sm btn-primary no-border" type="submit">
+                <i class="icon-ok"></i>
+                Submit
+            </button>
+            <button class="btn btn-sm btn-danger no-border" type="reset">Reset</button>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+/*var profiles = {{ awsprofiles_json|safe }};
+var regions = {{ awsregions_json|safe }};
+var modules = {{ modules_json|safe }};
+var steps = [];
+var stepCount = 0;*/
+
+function MakeProfileSelect(stepSeq) {
+    $("#tdStepProfile_"+stepSeq).empty();
+    var sel = $('<select></select>')
+        .prop('name', "profile["+stepSeq+"]")
+        .prop('id', "selStepProfile_"+stepSeq)
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeRegionSelect(stepSeq);
+        });
+    for (var i=0; i<profiles.length; i++) {
+        $("<option>"+profiles[i]+"</option>").appendTo(sel)
+    }
+    $("#tdStepProfile_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeRegionSelect(stepSeq) {
+    $("#tdStepRegion_"+stepSeq).empty();
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    if (profileName == "---") return;
+    var sel = $('<select></select>')
+        .prop('name', "region["+stepSeq+"]")
+        .prop('id', "selStepRegion_"+stepSeq)
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeModuleSelect(stepSeq);
+        });
+    for (var i=0; i<regions[profileName].length; i++) {
+        $("<option>"+regions[profileName][i]+"</option>").appendTo(sel)
+    }
+    $("#tdStepRegion_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeModuleSelect(stepSeq) {
+    $('#tdStepModule_'+stepSeq).empty();
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    if (regionName == "---") return;
+    var key = profileName+":"+regionName;
+    var sel = $('<select></select>')
+        .prop('name', "module["+stepSeq+"]")
+        .prop('id', "selStepModule_"+stepSeq)
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeCurrentVersionSelect(stepSeq);
+        });
+    var moduleNames = [];
+    for (var i=0; i<modules[key].length; i++) {
+        if (-1 == $.inArray(modules[key][i].name, moduleNames)) {
+            moduleNames.push(modules[key][i].name);
+        }
+    }
+    for (var i=0; i<moduleNames.length; i++) {
+        $("<option>"+moduleNames[i]+"</option>").appendTo(sel);
+    }
+    $("#tdStepModule_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeCurrentVersionSelect(stepSeq) {
+    $('#tdStepCurrentVersion_'+stepSeq).empty()
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    var moduleName = $("#selStepModule_"+stepSeq).val();
+    if (moduleName == "---") return;
+    var key = profileName+":"+regionName;
+    var sel = $('<select></select>')
+        .prop('name', "currentVersion["+stepSeq+"]")
+        .prop('id', "selStepCurrentVersion_"+stepSeq)
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            ShowLoadBalancerNames(stepSeq);
+        })
+    for (var i=0; i<modules[key].length; i++) {
+        if (modules[key][i].name == moduleName) {
+            $("<option>"+modules[key][i].current_version+"</option>").appendTo(sel);
+        }
+    }
+    $('#tdStepCurrentVersion_'+stepSeq).append(sel);
+    return sel;
+}
+
+function ShowLoadBalancerNames(stepSeq) {
+    $('#tdStepLoadBalancers_'+stepSeq).empty()
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    var moduleName = $("#selStepModule_"+stepSeq).val();
+    var currentVersion = $("#selStepCurrentVersion_"+stepSeq).val();
+    if (moduleName == "---") return;
+    if (currentVersion == "---") return;
+    var key = profileName+":"+regionName;
+    for (var i=0; i<modules[key].length; i++) {
+        if ((modules[key][i].name == moduleName) &&
+            (modules[key][i]).current_version == currentVersion) {
+            $('#tdStepLoadBalancers_'+stepSeq).html(modules[key][i].load_balancer_names);
+            return;
+        }
+    }
+}
+
+function MakeStepRow() {
+    var tr = $("<tr></tr>")
+        .append($("<td></td>").html(stepCount).prop('id', 'tdStep_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepProfile_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepRegion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepModule_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepCurrentVersion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepNewVersion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepNumberOfInstances_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepLoadBalancers_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepDelete_'+stepCount));
+    tr.appendTo("#tbodyUpdateSteps");
+    MakeProfileSelect(stepCount)
+    $('#tdStepNewVersion_'+stepCount).append(
+        $('<input />').prop('type', 'text')
+                      .prop('name', 'newVersion['+stepCount+']')
+    )
+    $('#tdStepNumberOfInstances_'+stepCount).append(
+        $('<input />').prop('type', 'text')
+                      .prop('name', 'numberOfInstances['+stepCount+']')
+    )
+    stepCount += 1;
+    $('#iStepCount').val(stepCount);
+}
+
+$(document).ready(function(){
+})
+</script>
+{% endblock %}

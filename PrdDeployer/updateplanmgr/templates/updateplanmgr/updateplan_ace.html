@@ -1,0 +1,309 @@
+{% extends 'layout.html' %}
+{% block title %}UpdatePlan{% endblock %}
+{% block body %}
+<h3 class="header smaller">
+    {{plan.project_name}}
+    <small>
+        <i class="icon-double-angle-right"></i>
+        {{plan.project_code}} -- {{plan.project_leader}}
+    </small>
+</h3>
+<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:instances_summary' plan_id=plan.id %}" target="_blank">
+    <i class="icon-desktop"></i>
+    Check EC2 Status
+</a>
+<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:elb_summary' plan_id=plan.id %}" target="_blank">
+    <i class="icon-random"></i>
+    Check ELB Status
+</a>
+<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:actionlogs' plan_id=plan.id %}" target="_blank">
+    <i class="icon-list"></i>
+    View Action Logs
+</a>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Step</th>
+            <th>Region</th>
+            <th>Module</th>
+            <th>New Version</th>
+            <th>New Instances</th>
+            <th>Old Version</th>
+            <th>Old Instances</th>
+            <th>Load Balancers</th>
+            <th>ELB State</th>
+            <th>Load Balancer Actions</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for step in steps %}
+        <tr>
+            <td>{{step.sequence}}</td>
+            <td>{{step.module.region.full_name}}</td>
+            <td>{{step.module.display_name}}</td>
+            <td>{{step.module.current_version}}</td>
+            <td>
+                <button class="btn btn-xs no-border btn-primary" onclick="run_module_ec2({{step.id}})">Run</button>
+                <span>{{step.module.healthy_instance_count}}/{{step.module.instance_count}}</span>
+            </td>
+            <td>{{step.module.previous_version}}</td>
+            <td>
+                <button class="btn btn-xs no-border btn-danger" onclick="stop_module_previous_ec2({{step.id}})">Stop</button>
+                <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
+            </td>
+            <td>{{step.module.load_balancer_names}}</td>
+            <td>
+                <span id="spanElbState"></span>
+                <button class="btn btn-xs no-border btn-info" onclick="check_module_elb_health({{step.id}})">Check</button>
+            </td>
+            <td>
+                {% if step.module.load_balancer_names %}
+                <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Register New</button>
+                <button class="btn btn-xs no-border btn-danger" onclick="dereg_module_elb({{step.id}})">Deregister Old</button>
+                {% endif %}
+            </td>
+            <td>
+                <button class="btn btn-xs no-border btn-info" onclick="finish_step({{step.id}})">Mark</button>
+                <a target="_blank" href="{% url 'updateplanmgr:edit_module_json' step.module.id %}">Edit JSON</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="divAjaxMessage">
+</div>
+{% endblock %}
+{% block page_js %}
+<script type="text/javascript">
+function run_module_ec2(step_id) {
+    if (!confirm("Run new instances?")) return;
+    show_ajax_action("Launching EC2 instances ...");
+    $.ajax({
+        url: '/update/ajax/run_module_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(instance_ids) {
+            show_ajax_action(JSON.stringify(instance_ids));
+            console.log(instance_ids);
+            add_module_ec2_tags(step_id, instance_ids);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    });
+}
+
+function add_module_ec2_tags(step_id, instance_ids) {
+    if (instance_ids.length == 0)
+        return;
+    show_ajax_action("Adding tags to EC2 instances ...");
+    $.ajax({
+        url: '/update/ajax/add_module_ec2_tags/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id,
+            instance_ids: instance_ids
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            console.log(data);
+            add_module_volume_tags(step_id, instance_ids);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    });
+}
+
+function add_module_volume_tags(step_id, instance_ids) {
+    if (instance_ids.length == 0)
+        return;
+    show_ajax_action("Adding tags to EBS volumes ...");
+    $.ajax({
+        url: '/update/ajax/add_module_volume_tags/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id,
+            instance_ids: instance_ids
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
+            console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
+        }
+    })
+}
+
+
+function stop_module_ec2(step_id) {
+    if (!confirm("Stop these instances?")) return;
+    show_ajax_action("Marking instances as 'to_stop' ...");
+    $.ajax({
+        url: '/update/ajax/stop_module_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    })
+}
+
+
+function stop_module_previous_ec2(step_id) {
+    if (!confirm("Stop old instances?")) return;
+    show_ajax_action("Stopping ... Use [Check EC2 Status] to see latest status.");
+    $.ajax({
+        url: '/update/ajax/stop_module_previous_ec2/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    })
+}
+
+
+function reg_module_elb(step_id) {
+    if (!confirm("Register new instances?")) return;
+    show_ajax_action("Registering instances with load balancers ...");
+    $.ajax({
+        url: '/update/ajax/reg_module_elb/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
+            console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
+        }
+    })
+}
+
+
+function dereg_module_elb(step_id) {
+    if (!confirm("Deregister old instances?")) return;
+    show_ajax_action("Deregistering instances from load balancers ...");
+    $.ajax({
+        url: '/update/ajax/dereg_module_elb/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            show_ajax_action("----------");
+            console.log(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+            show_ajax_action("----------");
+        }
+    })
+}
+
+
+function finish_step(step_id) {
+    if (!confirm("Finish this step?")) return;
+    show_ajax_action("Finishing step ...");
+    $.ajax({
+        url: '/update/ajax/finish_step/',
+        method: 'post',
+        dataType: 'json',
+        data: {
+            step_id: step_id
+        },
+        success: function(result) {
+            show_ajax_action(JSON.stringify(result));
+            if (result[0]) {
+                alert("Step finished.")
+                // TODO disable buttons here
+            } else {
+                alert("Cannot finish step: "+result[1])
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    })
+}
+
+
+function check_module_elb_health(step_id) {
+    $.ajax({
+        url: "/update/ajax/check_module_elb_health/",
+        method: "post",
+        dataType: "json",
+        data: {
+            step_id: step_id
+        },
+        success: function(data) {
+            show_ajax_action(JSON.stringify(data));
+            if (data) {
+                $('#spanElbState').html(
+                    data[0]+"/"+data[1]+" InService"
+                );
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    })
+}
+
+
+function show_ajax_action(msg) {
+    var p = $("<p></p>").html(msg).addClass("ajax_message");
+    p.prependTo("#divAjaxMessage");
+}
+
+
+function show_ajax_error(xmlhttprequest, textstatus, message) {
+    console.log(message);
+    var divStatus = $("<div></div>").html("AJAX ERROR: "+textstatus);
+    var divMessage = $("<div></div>").html("Error message: "+message);
+    var p = $("<p></p>").addClass("ajax_error");
+    p.append(divStatus).append(divMessage).appendTo("#divAjaxMessage");
+
+}
+
+$(document).on("keypress", 'form', function (e) {
+    var code = e.keyCode || e.which;
+    if (code == 13) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>
+{% endblock %}

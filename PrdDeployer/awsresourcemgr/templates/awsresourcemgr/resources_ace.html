@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <h3 class="header">Resources in {{profile.name}}:{{region.name}}</h3>
+    <button class="btn btn-sm btn-primary no-border" onclick="confirmUpdateResources()">
+        <i class="icon-refresh"></i>
+        Update
+    </button>
+<div class="tabbable">
+    <ul class="nav nav-tabs tab-color-blue background-blue" id="ulTabs">
+        {%for resources in resource_arr%}
+        <li><a data-toggle="tab" href="#tab_{{resources.0}}">{{resources.0}}</a></li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="divTabs">
+        {%for resources in resource_arr%}
+        <div id="tab_{{resources.0}}" class="tab-pane">
+            <table class="table table-hover">
+                <tbody>
+                    {% for resource in resources.1 %}
+                    <tr>
+                        <td>&quot;{{resource.0}}&quot;, &quot;{{resource.1}}&quot;</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+var url_update_resources = "{% url 'awsresourcemgr:update_resources' profile_name=profile.name region_name=region.name resource_type='all' %}"
+$(document).ready(function(){
+    $('#ulTabs li').first().toggleClass('active');
+    $('#divTabs div').first().toggleClass('active');
+});
+
+function confirmUpdateResources() {
+    var tip = "Update process might take up to several minutes. \nAre you sure you want to update all resources?";
+    if (confirm(tip)) {
+        window.location.href = url_update_resources;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+{% block title %}Index{% endblock %}
+{% block body %}
+
+<div class="row">
+    <a class="btn btn-primary btn-large no-border" href="{% url 'updateplanmgr:updateplans' %}">
+        <i class="icon-list"></i>
+        View All Update Plans
+    </a>
+    <a class="btn btn-danger btn-large no-border" href="{% url 'updateplanmgr:new_updateplan' %}">
+        <i class="icon-plus"></i>
+        New Update Plan
+    </a>
+</div>
+
+{% for profile in profiles %}
+<h3 class="header smaller">{{profile.name}}</h3>
+<div class="row">
+    {% for region in profile.regions.all %}
+    <div class="widget col-sm-4">
+        <div class="widget-header widget-header-flat">
+            <h5 class="brown">{{region.name}}</h5>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div>
+                    <a href="{% url 'updateplanmgr:modules' profile_name=profile.name region_name=region.name %}">
+                        <i class="icon-cog"></i>
+                        Modules
+                    </a>
+                </div>
+                <div>
+                    <a href="{% url 'awsresourcemgr:resources' profile_name=profile.name region_name=region.name %}">
+                        <i class="icon-file"></i>
+                        Resources
+                    </a>
+                </div>
+                <div>
+                    <a href="{% url 'awsresourcemgr:update_resources' profile_name=profile.name region_name=region.name resource_type='all' %}">
+                        <li class="icon-cloud-download"></li>
+                        Update Resources
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+{% endblock %}

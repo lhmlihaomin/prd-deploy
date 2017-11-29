@@ -88,14 +88,14 @@ def update_resources(request, profile_name, region_name, resource_type):
             awsresource.delete()
 
         ret.append([resource_type, str(ids_to_add), str(ids_to_del)])
-    return render(request, "awsresourcemgr/update_resources.html", locals())
+    return render(request, "awsresourcemgr/update_resources_ace.html", locals())
 
 
 @login_required
 def resources(request, profile_name, region_name):
     resource_types = (
-        "vpc",
         "image",
+        "vpc",
         "key_pair",
         "instance_profile",
         "subnet",
@@ -111,7 +111,7 @@ def resources(request, profile_name, region_name):
             profile=profile,
             region=region,
             resource_type=resource_type
-        )
+        ).order_by('name')
         resource_arr.append(
             [
                 resource_type,
@@ -119,8 +119,9 @@ def resources(request, profile_name, region_name):
             ]
         )
     context = {
+        'title': "Resources", 
         'profile': profile,
         'region': region,
         'resource_arr': resource_arr
     }
-    return render(request, 'awsresourcemgr/resources.html', context)
+    return render(request, 'awsresourcemgr/resources_ace.html', context)

@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+{% block body %}
+<div class="row">
+    <div class="col-sm-1"></div>
+    <div class="col-sm-10">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>PROJECT CODE</th>
+                    <th>PROJECT NAME</th>
+                    <th>LEADER</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td>{{plan.project_code}}</td>
+                    <td>
+                        <a href="{% url 'updateplanmgr:updateplan' plan_id=plan.id%}">{{plan.project_name}}</a>
+                    </td>
+                    <td>{{plan.project_leader}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-1"></div>
+</div>
+{% endblock %}

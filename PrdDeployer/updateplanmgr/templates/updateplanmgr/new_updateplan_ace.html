@@ -1,0 +1,266 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<h3 class="header">New Update Plan</h3>
+
+<div class="col-xs-10"><form class="form-horizontal" method="post">
+    {% csrf_token %}
+    <input id="iStepCount" name="stepCount" value="0" type="hidden" />
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Project Name</label>
+        <div class="col-sm-9">
+            <input data-toggle="tooltip" data-rel="tooltip" title="hello" id="iName" class="col-xs-10 col-sm-5" name="project_name" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Project Code</label>
+        <div class="col-sm-9">
+            <input data-toggle="tooltip" data-rel="tooltip" title="hello" id="iName" class="col-xs-10 col-sm-5" name="project_code" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Project Leader</label>
+        <div class="col-sm-9">
+            <input data-toggle="tooltip" data-rel="tooltip" title="hello" id="iName" class="col-xs-10 col-sm-5" name="project_leader" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Update Start Time</label>
+        <div class="col-sm-9">
+            <input data-toggle="tooltip" data-rel="tooltip" title="hello" id="iName" class="col-xs-10 col-sm-5" name="start_time" type="text" />
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <div class="form-group">
+        <label class="col-sm-3 control-label no-padding-right" for="iName">Note</label>
+        <div class="col-sm-9">
+            <textarea class="col-xs-10 col-sm-5" style="height:20em;font-family:Consolas" name="note" type="text"></textarea>
+        </div>
+    </div>
+    <div class="space-4"></div>
+
+    <h4 class="header smaller">Update Steps</h4>
+    <div id="divUpdateSteps">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Step</th>
+                    <th>Profile</th>
+                    <th>Region</th>
+                    <th>Module</th>
+                    <th>Current Version</th>
+                    <th>New Version</th>
+                    <th>Number of Instances</th>
+                    <th>Load Balancers</th>
+                    <th>
+                        <button class="btn btn-xs btn-primary no-border" type="button" onclick="MakeStepRow()">Add Step</button>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="tbodyUpdateSteps">
+                <!--<tr>
+                    <td>1</td>
+                    <td>cn-alpha</td>
+                    <td>Beijing</td>
+                    <td>
+                        <select>
+                            <option>mod1</option>
+                            <option>mod2</option>
+                        </select>
+                    </td>
+                    <td><input type="text" value="1.1.1" /></td>
+                    <td><select><option>1.0.0</option></select></td>
+                    <td><input type="number" value="1" /></td>
+                    <td>None</td>
+                    <td></td>
+                </tr>-->
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <input class="btn btn-xs btn-primary no-border" type="submit" value="Submit" />
+    </div>
+</form></div>
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+var profiles = {{ awsprofiles_json|safe }};
+var regions = {{ awsregions_json|safe }};
+var modules = {{ modules_json|safe }};
+var steps = [];
+var stepCount = 0;
+
+function MakeProfileSelect(stepSeq) {
+    $("#tdStepProfile_"+stepSeq).empty();
+    var sel = $('<select></select>')
+        .prop('name', "profile["+stepSeq+"]")
+        .prop('id', "selStepProfile_"+stepSeq)
+        .addClass('form-control')
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeRegionSelect(stepSeq);
+        });
+    for (var i=0; i<profiles.length; i++) {
+        $("<option>"+profiles[i]+"</option>").appendTo(sel)
+    }
+    $("#tdStepProfile_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeRegionSelect(stepSeq) {
+    $("#tdStepRegion_"+stepSeq).empty();
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    if (profileName == "---") return;
+    var sel = $('<select></select>')
+        .prop('name', "region["+stepSeq+"]")
+        .prop('id', "selStepRegion_"+stepSeq)
+        .addClass('form-control')
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeModuleSelect(stepSeq);
+        });
+    for (var i=0; i<regions[profileName].length; i++) {
+        $("<option>"+regions[profileName][i]+"</option>").appendTo(sel)
+    }
+    $("#tdStepRegion_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeModuleSelect(stepSeq) {
+    $('#tdStepModule_'+stepSeq).empty();
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    if (regionName == "---") return;
+    var key = profileName+":"+regionName;
+    var sel = $('<select></select>')
+        .prop('name', "module["+stepSeq+"]")
+        .prop('id', "selStepModule_"+stepSeq)
+        .addClass('form-control')
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            MakeCurrentVersionSelect(stepSeq);
+        });
+    var moduleNames = [];
+    for (var i=0; i<modules[key].length; i++) {
+        if (-1 == $.inArray(modules[key][i].name, moduleNames)) {
+            moduleNames.push(modules[key][i].name);
+        }
+    }
+    for (var i=0; i<moduleNames.length; i++) {
+        $("<option>"+moduleNames[i]+"</option>").appendTo(sel);
+    }
+    $("#tdStepModule_"+stepSeq).append(sel);
+    return sel;
+}
+
+function MakeCurrentVersionSelect(stepSeq) {
+    $('#tdStepCurrentVersion_'+stepSeq).empty()
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    var moduleName = $("#selStepModule_"+stepSeq).val();
+    if (moduleName == "---") return;
+    var key = profileName+":"+regionName;
+    var sel = $('<select></select>')
+        .prop('name', "currentVersion["+stepSeq+"]")
+        .prop('id', "selStepCurrentVersion_"+stepSeq)
+        .attr('data-seq', stepSeq)
+        .append("<option selected>---</option>")
+        .change(function(){
+            ShowLoadBalancerNames(stepSeq);
+        })
+    for (var i=0; i<modules[key].length; i++) {
+        if (modules[key][i].name == moduleName) {
+            $("<option>"+modules[key][i].current_version+"</option>").appendTo(sel);
+        }
+    }
+    $('#tdStepCurrentVersion_'+stepSeq).append(sel);
+    return sel;
+}
+
+function ShowLoadBalancerNames(stepSeq) {
+    $('#tdStepLoadBalancers_'+stepSeq).empty()
+    var profileName = $('#selStepProfile_'+stepSeq).val();
+    var regionName = $("#selStepRegion_"+stepSeq).val();
+    var moduleName = $("#selStepModule_"+stepSeq).val();
+    var currentVersion = $("#selStepCurrentVersion_"+stepSeq).val();
+    if (moduleName == "---") return;
+    if (currentVersion == "---") return;
+    var key = profileName+":"+regionName;
+    for (var i=0; i<modules[key].length; i++) {
+        if ((modules[key][i].name == moduleName) &&
+            (modules[key][i]).current_version == currentVersion) {
+            $('#tdStepLoadBalancers_'+stepSeq).html(modules[key][i].load_balancer_names);
+            return;
+        }
+    }
+}
+
+function MakeStepRow() {
+    var tr = $("<tr></tr>")
+        .append($("<td></td>").html(stepCount).prop('id', 'tdStep_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepProfile_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepRegion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepModule_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepCurrentVersion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepNewVersion_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepNumberOfInstances_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepLoadBalancers_'+stepCount))
+        .append($("<td></td>").prop('id', 'tdStepDelete_'+stepCount));
+    tr.appendTo("#tbodyUpdateSteps");
+    MakeProfileSelect(stepCount)
+    $('#tdStepNewVersion_'+stepCount).append(
+        $('<input />').prop('type', 'text')
+                      .prop('name', 'newVersion['+stepCount+']')
+    )
+    $('#tdStepNumberOfInstances_'+stepCount).append(
+        $('<input />').prop('type', 'text')
+                      .prop('name', 'numberOfInstances['+stepCount+']')
+    )
+    $('#tdStepDelete_'+stepCount).append(
+        $('<button>Delete</button>').prop('type', 'button')
+                                    .addClass('btn btn-danger btn-xs no-border')
+                                    .click(function(stepCount){
+                                        return function() {
+                                            DelStepRow(stepCount);
+                                        }
+                                    }(stepCount))
+    )
+    stepCount += 1;
+    $('#iStepCount').val(stepCount);
+}
+
+function DelStepRow(stepNum) {
+    if (stepNum == stepCount - 1) {
+        console.log("Delete row on "+stepNum);
+        stepCount -= 1;
+        $('#iStepCount').val(stepCount);
+        $('#tdStepDelete_'+stepNum).parent().remove();
+        return true;
+    } else {
+        alert("Please delete from the back.");
+        return false;
+    }
+}
+
+$(document).ready(function(){
+$(document).on("keypress", 'form', function (e) {
+    var code = e.keyCode || e.which;
+    if (code == 13) {
+        e.preventDefault();
+        return false;
+    }
+});
+})
+</script>
+{% endblock %}

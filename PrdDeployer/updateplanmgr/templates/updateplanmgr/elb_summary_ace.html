@@ -1,0 +1,31 @@
+{% extends 'layout.html' %}
+{% block body %}
+<h3 class="header smaller">
+    {{plan.project_name}}
+    <small>
+        <i class="icon-double-angle-right"></i>
+        {{plan.project_code}} -- {{plan.project_leader}}
+    </small>
+</h3>
+
+{% for elb_state in elb_states %}
+<h4 class="header smaller">{{elb_state.elb_name}}</h4>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th>Id</th><th>Name</th><th>State</th></tr>
+    </thead>
+    <tbody>
+        {% for instance_state in elb_state.instance_states %}
+        {% with state=instance_state.state %}
+        <tr class="{%if state == 'OutOfService'%}red{%endif%}">
+            <td>{{ instance_state.instance_id }}</td>
+            <td>{{ instance_state.instance_name }}</td>
+            <td>{{ state }}</td>
+        </tr>
+        {% endwith %}
+        {% endfor %}
+    </tbody>
+    </table>
+{% endfor %}
+
+{% endblock %}

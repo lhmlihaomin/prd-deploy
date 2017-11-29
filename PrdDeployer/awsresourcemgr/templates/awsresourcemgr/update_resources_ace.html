@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block body %}
+        <h3 class="header">Update AWS Resources</h3>
+        <h4 class="header smaller">{{profile.name}} - {{region.name}}</h4>
+
+        {% for r in ret %}
+        <div class="col-xs-10">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <caption>{{r.0}}</caption>
+                </thead>
+                <tbody>
+                <tr><th>Added</th><th>Removed</th></tr>
+                <tr>
+                    <td>{{r.1}}</td>
+                    <td>{{r.2}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+{% endblock %}
