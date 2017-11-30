@@ -31,7 +31,7 @@
             <th>Old Version</th>
             <th>Old Instances</th>
             <th>Load Balancers</th>
-            <th>ELB State</th>
+            <!--<th>ELB State</th>-->
             <th>Load Balancer Actions</th>
             <th>Actions</th>
         </tr>
@@ -53,10 +53,10 @@
                 <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
             </td>
             <td>{{step.module.load_balancer_names}}</td>
-            <td>
+            <!--<td>
                 <span id="spanElbState"></span>
                 <button class="btn btn-xs no-border btn-info" onclick="check_module_elb_health({{step.id}})">Check</button>
-            </td>
+            </td>-->
             <td>
                 {% if step.module.load_balancer_names %}
                 <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Register New</button>
