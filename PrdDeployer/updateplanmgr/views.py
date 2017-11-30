@@ -470,3 +470,26 @@ def actionlogs(request, plan_id):
     return render(request, 'updateplanmgr/actionlogs_ace.html', context=context)
 
     
+@login_required
+def edit_module(request, module_id):
+    # Read module info:
+    module = Module.objects.get(pk=module_id)
+
+    context = {}
+    if request.method == "GET":
+        # Fill context:
+        context = {
+            'name': module.name,
+            'instance_count': module.instance_count,
+            'configuration': module.configuration,
+            'load_balancer_names': module.load_balancer_names,
+            'service_type': module.service_type
+        }
+
+        # Render page:
+        return render(request, 'updateplanmgr/edit_module_ace.html', context=context)
+    elif request.method == "POST":
+        # Read post form:
+        # Compare args:
+        # Save module
+        pass
