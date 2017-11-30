@@ -479,17 +479,73 @@ def edit_module(request, module_id):
     if request.method == "GET":
         # Fill context:
         context = {
+            'title': "Edit Module",
             'name': module.name,
             'instance_count': module.instance_count,
             'configuration': module.configuration,
             'load_balancer_names': module.load_balancer_names,
-            'service_type': module.service_type
+            'service_type': module.service_type,
+            'module': module,
         }
 
         # Render page:
         return render(request, 'updateplanmgr/edit_module_ace.html', context=context)
     elif request.method == "POST":
-        # Read post form:
-        # Compare args:
+        # Read post form & compare args:
+        errors = []
+        if request.POST.get('name'):
+            name = request.POST.get('name')
+            if name != module.name:
+                module.name = name
+        if request.POST.get('instance_count'):
+            instance_count = int(request.POST.get('instance_count'))
+            if instance_count != module.instance_count:
+                module.instance_count = instance_count
+        if request.POST.get('load_balancer_names'):
+            print request.POST.get('load_balancer_names')
+            load_balancer_names = request.POST.get('load_balancer_names')
+            if load_balancer_names != module.load_balancer_names:
+                print "editing load balancer names..."
+                module.load_balancer_names = load_balancer_names
+        if request.POST.get('service_type'):
+            service_type = request.POST.get('service_type')
+            if service_type != module.service_type:
+                module.service_type = service_type
+        if request.POST.get('configuration'):
+            try:
+                configuration = json.loads(request.POST.get('configuration'))
+                configuration = json.dumps(configuration, indent=2)
+                module.configuration = configuration
+            except:
+                errors.append("Configuration is not valid JSON")
+
         # Save module
-        pass
+        if not errors:
+            print "Saving module ..."
+            module.save()
+            return HttpResponseRedirect(
+                reverse(
+                    'updateplanmgr:modules',
+                    kwargs={
+                        'profile_name': module.profile.name,
+                        'region_name': module.region.name,
+                    }
+                )
+            )
+        else:
+            print errors
+            module.refresh_from_db()
+
+        context = {
+            'title': "Edit Module",
+            'name': module.name,
+            'instance_count': module.instance_count,
+            'configuration': module.configuration,
+            'load_balancer_names': module.load_balancer_names,
+            'service_type': module.service_type,
+            'module': module,
+            'post': request.POST,
+            'errors': errors,
+        }
+        # Render page:
+        return render(request, 'updateplanmgr/edit_module_ace.html', context=context)

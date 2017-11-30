@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^instances_summary/(?P<plan_id>\d+)/$', views.instances_summary, name='instances_summary'),
     url(r'^elb_summary/(?P<plan_id>\d+)/$', views.elb_summary, name='elb_summary'),
     url(r'actionlogs/(?P<plan_id>\d+)/$', views.actionlogs, name='actionlogs'),
+    url(r'^edit_module/(?P<module_id>\d+)/$', views.edit_module, name='edit_module'),
 
     # ajax views:
     url(r'ajax/run_module_ec2/', ajax_views.run_module_ec2, name='ajax.run_module_ec2'),

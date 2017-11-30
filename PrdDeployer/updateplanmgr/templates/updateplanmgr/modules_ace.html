@@ -24,9 +24,12 @@
                     <td>{{module.current_version}}</td>
                     <td>{{module.instance_count}}</td>
                     <td>{{module.load_balancer_names}}</td>
-                    <td><a class="btn btn-xs btn-info no-border" href="{% url 'updateplanmgr:edit_module_json' module.id %}">Edit JSON</a></td>
                     <td>
-                        {% if module.is_online_version %}Yes{% else %}No  <a class="btn btn-xs btn-white no-border" href="#module_set_primary_{{module.id}}">Set as Primary</a>{% endif %}
+                        <a class="btn btn-xs btn-info no-border" href="{% url 'updateplanmgr:edit_module_json' module.id %}">Edit JSON</a>
+                        <a class="btn btn-xs btn-info no-border" href="{% url 'updateplanmgr:edit_module' module.id %}">Edit</a>
+                    </td>
+                    <td>
+                        {% if module.is_online_version %}Yes{% else %}No<!--  <a class="btn btn-xs btn-white no-border" href="#module_set_primary_{{module.id}}">Set as Primary</a>-->{% endif %}
                     </td>
                     <td>{{module.service_type}}</td>
                 </tr>

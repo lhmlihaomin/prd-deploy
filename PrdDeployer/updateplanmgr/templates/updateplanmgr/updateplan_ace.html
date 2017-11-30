@@ -72,8 +72,17 @@
     </tbody>
 </table>
 
-<div id="divAjaxMessage">
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+        <h5>Action Log</h5>
+    </div>
+    <div class="widget-body">
+        <div class="widget-main">
+            <div style="min-height:500px; overflow:auto;" id="divAjaxMessage"></div>
+        </div>
+    </div>
 </div>
+
 {% endblock %}
 {% block page_js %}
 <script type="text/javascript">
@@ -135,12 +144,10 @@ function add_module_volume_tags(step_id, instance_ids) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
-            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
-            show_ajax_action("----------");
         }
     })
 }
@@ -200,12 +207,10 @@ function reg_module_elb(step_id) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
-            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
-            show_ajax_action("----------");
         }
     })
 }
@@ -223,12 +228,10 @@ function dereg_module_elb(step_id) {
         },
         success: function(data) {
             show_ajax_action(JSON.stringify(data));
-            show_ajax_action("----------");
             console.log(data);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);
-            show_ajax_action("----------");
         }
     })
 }
@@ -284,7 +287,7 @@ function check_module_elb_health(step_id) {
 
 
 function show_ajax_action(msg) {
-    var p = $("<p></p>").html(msg).addClass("ajax_message");
+    var p = $("<p></p>").html(msg).addClass("body");
     p.prependTo("#divAjaxMessage");
 }
 
@@ -293,8 +296,10 @@ function show_ajax_error(xmlhttprequest, textstatus, message) {
     console.log(message);
     var divStatus = $("<div></div>").html("AJAX ERROR: "+textstatus);
     var divMessage = $("<div></div>").html("Error message: "+message);
-    var p = $("<p></p>").addClass("ajax_error");
-    p.append(divStatus).append(divMessage).appendTo("#divAjaxMessage");
+    var p = $("<p></p>").addClass("body red");
+    p.append(divStatus);
+    p.append(divMessage);
+    p.prependTo("#divAjaxMessage");
 
 }
 
