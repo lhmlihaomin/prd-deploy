@@ -88,6 +88,7 @@ def update_resources(request, profile_name, region_name, resource_type):
             awsresource.delete()
 
         ret.append([resource_type, str(ids_to_add), str(ids_to_del)])
+        title = "Update Resources"
     return render(request, "awsresourcemgr/update_resources_ace.html", locals())
 
 

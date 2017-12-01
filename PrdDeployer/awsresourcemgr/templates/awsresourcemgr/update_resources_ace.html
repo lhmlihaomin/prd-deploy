@@ -1,8 +1,7 @@
 {% extends "layout.html" %}
 
 {% block body %}
-        <h3 class="header">Update AWS Resources</h3>
-        <h4 class="header smaller">{{profile.name}} - {{region.name}}</h4>
+        <h4 class="header smaller">{{profile.name}} : {{region.name}}</h4>
 
         {% for r in ret %}
         <div class="col-xs-10">

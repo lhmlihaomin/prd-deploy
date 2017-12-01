@@ -8,18 +8,25 @@
         {{plan.project_code}} -- {{plan.project_leader}}
     </small>
 </h3>
-<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:instances_summary' plan_id=plan.id %}" target="_blank">
-    <i class="icon-desktop"></i>
-    Check EC2 Status
-</a>
-<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:elb_summary' plan_id=plan.id %}" target="_blank">
-    <i class="icon-random"></i>
-    Check ELB Status
-</a>
-<a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:actionlogs' plan_id=plan.id %}" target="_blank">
-    <i class="icon-list"></i>
-    View Action Logs
-</a>
+<p>
+    <a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:instances_summary' plan_id=plan.id %}" target="_blank">
+        <i class="icon-desktop"></i>
+        Check EC2 Status
+    </a>
+    <a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:elb_summary' plan_id=plan.id %}" target="_blank">
+        <i class="icon-random"></i>
+        Check ELB Status
+    </a>
+    <a class="btn btn-sm btn-info no-border" href="{% url 'updateplanmgr:actionlogs' plan_id=plan.id %}" target="_blank">
+        <i class="icon-list"></i>
+        View Action Logs
+    </a>
+    <a class="btn btn-sm btn-success no-border" style="float:right;" onclick="window.location.reload()">
+        <i class="icon-refresh"></i>
+        Refresh
+    </a>
+</p>
+
 <table class="table table-striped table-bordered table-hover">
     <thead>
         <tr>

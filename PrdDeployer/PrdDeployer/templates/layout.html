@@ -124,14 +124,20 @@
 								<i class="icon-home"></i>
 								<span class="menu-text"> Home </span>
 							</a>
+						</li>
+						<li>
+							<a href="{% url 'updateplanmgr:new_updateplan' %}">
+								<i class="icon-plus"></i>
+								<span class="menu-text"> New Plan </span>
+							</a>
                         </li>
                         <li>
-							<a href="{% url 'updateplanmgr:index' %}">
+							<a href="{% url 'updateplanmgr:updateplans' %}">
 								<i class="icon-list"></i>
 								<span class="menu-text"> Update Plans </span>
 							</a>
                         </li>
-                        <li>
+                        <!--<li>
 							<a href="{% url 'updateplanmgr:index' %}">
 								<i class="icon-cog"></i>
 								<span class="menu-text"> Modules </span>
@@ -143,7 +149,7 @@
 								<span class="menu-text"> Resources </span>
 							</a>
                         </li>
-					</ul><!-- /.nav-list -->
+					</ul>--><!-- /.nav-list -->
 
 
 					<script type="text/javascript">
@@ -153,7 +159,7 @@
 
 				<div class="main-content">
 
-					<div class="page-content">
+					<div class="page-content"> 
 						<div class="page-header">
 							<h1>{{title}}</h1>
 						</div><!-- /.page-header -->
