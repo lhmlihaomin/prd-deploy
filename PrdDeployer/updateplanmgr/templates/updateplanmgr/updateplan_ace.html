@@ -71,8 +71,9 @@
                 {% endif %}
             </td>
             <td>
-                <button class="btn btn-xs no-border btn-info" onclick="finish_step({{step.id}})">Mark</button>
-                <a target="_blank" href="{% url 'updateplanmgr:edit_module_json' step.module.id %}">Edit JSON</a>
+                <!--<button class="btn btn-xs no-border btn-info" onclick="finish_step({{step.id}})">Mark</button>-->
+                <!--<a target="_blank" href="{% url 'updateplanmgr:edit_module_json' step.module.id %}">Edit JSON</a>-->
+                <a target="_blank" href="{% url 'updateplanmgr:edit_module' step.module.id %}" title="Edit Module"><i class="icon-edit"></i></a>
             </td>
         </tr>
         {% endfor %}
