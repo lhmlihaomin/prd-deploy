@@ -32,14 +32,14 @@
 {% endblock %}
 
 {% block additional_js_files %}
-<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'js/jquery.dataTables.bootstrap.js' %}"></script>
+<script src="{% static 'js/dataTables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.min.js' %}"></script>
 {% endblock %}
 
 {% block page_js %}
 <script type="text/javascript">
 var oTable = $("#tblUpdatePlans").dataTable({
-    
+    "order": [[3, 'desc']]
 });
 </script>
 {% endblock %}
