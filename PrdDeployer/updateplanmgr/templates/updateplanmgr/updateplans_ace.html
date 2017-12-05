@@ -10,6 +10,7 @@
                     <th>PROJECT NAME</th>
                     <th>PROJECT CODE</th>
                     <th>LEADER</th>
+                    <th>START TIME</th>
                 </tr>
             </thead>
             <tbody>
@@ -20,6 +21,7 @@
                     </td>
                     <td>{{plan.project_code}}</td>
                     <td>{{plan.project_leader}}</td>
+                    <td>{{plan.start_time|date:"Y-m-d H:i:s"}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
