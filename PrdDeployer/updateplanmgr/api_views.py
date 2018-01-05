@@ -39,7 +39,7 @@ def new_updateplan(request):
         beta_version = data['beta_version']
         managers = data['managers'],
         data['update_steps']
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return JsonResponse({"message": "Failed to decode JSON string."}, status=400)
     except KeyError:
         return JsonResponse({"message": "Key not found."}, status=400)
