@@ -11,8 +11,12 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+# REST framework:
+from rest_framework import generics
+from rest_framework import mixins
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-from authtoken.models import Token
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource
 from boto3helper.ec2 import (get_instance_module_version,
@@ -25,13 +29,22 @@ from .models import Module, UpdateActionLog, UpdatePlan, UpdateStep
 from .views import make_new_version_module
 
 
-def JSONResponse(obj):
-    return HttpResponse(json.dumps(obj), content_type="application/json")
+def token_auth(request):
+    auth = TokenAuthentication()
+    try:
+        user, token = auth.authenticate(request)
+    except:
+        return None
+    # Check permission if needed:
+    pass
+    return user
 
 
 @csrf_exempt
 def new_updateplan(request):
-    print(request.is_ajax())
+    user = token_auth(request)
+    if user is None:
+        return JsonResponse({"message": "Auth failed."}, status=400)
     #if not Token.auth(request):
     #    return HttpResponse("UnAuthorized.", status=403)
     try:
@@ -97,3 +110,8 @@ def new_updateplan(request):
     except Exception as ex:
         return HttpResponse(traceback.format_exc(), status=500)
     return JsonResponse({"message": "OK"})
+
+
+class NewUpdatePlanMixin(mixins.CreateModelMixin, generics.GenericAPIView):
+    authentication_classes = [TokenAuthentication,]
+    permission_classes = [IsAuthenticated]
