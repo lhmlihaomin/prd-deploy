@@ -171,7 +171,9 @@ def make_new_version_module(profile, region, module_name, current_version, \
             service_type=module_old.service_type
         )
         # edit new values:
-        if instance_count == 0:
+        if instance_count is None:
+            module.instance_count = module_old.instance_count
+        elif instance_count == 0:
             module.instance_count = module_old.instance_count
         else:
             module.instance_count = instance_count
