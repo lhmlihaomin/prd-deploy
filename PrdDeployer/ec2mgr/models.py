@@ -109,6 +109,7 @@ class EC2Instance(models.Model):
                 'tomcat',
                 'bin'
             ])
-            return "cd %s&&/bin/bash ./shutdown.sh"%(tomcat_bin_dir,)
+            cmd = "source /etc/profile&&cd %s&&/bin/bash %s/shutdown.sh"%(tomcat_bin_dir, tomcat_bin_dir)
+            return cmd
         else:
             raise Exception("Unknown service type: "+module.service_type)
