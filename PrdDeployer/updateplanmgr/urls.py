@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'ajax/reg_module_elb/', ajax_views.reg_module_elb, name='ajax.reg_module_ec2'),
     url(r'ajax/dereg_module_elb/', ajax_views.dereg_module_elb, name='ajax.dereg_module_ec2'),
     url(r'ajax/check_module_elb_health/', ajax_views.check_module_elb_health, name='ajax.check_module_elb_health'),
+    url(r'ajax/disable_module_alarm/', ajax_views.disable_module_alarm, name='ajax.disable_module_alarm'),
 
     url(r'ajax/finish_step/', ajax_views.finish_step, name='ajax.finish_step'),
 

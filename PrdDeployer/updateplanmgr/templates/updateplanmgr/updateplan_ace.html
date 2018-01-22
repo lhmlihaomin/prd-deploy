@@ -21,6 +21,10 @@
         <i class="icon-list"></i>
         View Action Logs
     </a>
+    <a class="btn btn-sm btn-info no-border" href="{{alarm_url}}" target="_blank">
+        <i class="icon-bell"></i>
+        Open Alarm Page
+    </a>
     <a class="btn btn-sm btn-success no-border" style="float:right;" onclick="window.location.reload()">
         <i class="icon-refresh"></i>
         Refresh
@@ -33,13 +37,13 @@
             <th>Step</th>
             <th>Region</th>
             <th>Module</th>
-            <th>New Version</th>
-            <th>New Instances</th>
+            <!--<th>New Version</th>-->
+            <th>New EC2</th>
             <th>Old Version</th>
-            <th>Old Instances</th>
-            <th>Load Balancers</th>
+            <th>Old EC2</th>
+            <th>ELB</th>
             <!--<th>ELB State</th>-->
-            <th>Load Balancer Actions</th>
+            <th>ELB Actions</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -49,12 +53,18 @@
             <td>{{step.sequence}}</td>
             <td>{{step.module.region.full_name}}</td>
             <td>{{step.module.display_name}}</td>
-            <td>{{step.module.current_version}}</td>
+            <!--<td>{{step.module.current_version}}</td>-->
             <td>
                 <button class="btn btn-xs no-border btn-primary" onclick="run_module_ec2({{step.id}})">Run</button>
                 <span>{{step.module.healthy_instance_count}}/{{step.module.instance_count}}</span>
             </td>
-            <td>{{step.module.previous_version}}</td>
+            <td>
+                <button class="btn btn-xs no-border btn-inverse" onclick="disable_module_alarm({{step.id}})">
+                    <i class="icon-bell"></i>
+                    Disable Alarm
+                </button>
+                {{step.module.previous_version}}
+            </td>
             <td>
                 <button class="btn btn-xs no-border btn-danger" onclick="stop_module_previous_ec2({{step.id}})">Stop</button>
                 <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
@@ -66,8 +76,8 @@
             </td>-->
             <td>
                 {% if step.module.load_balancer_names %}
-                <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Register New</button>
-                <button class="btn btn-xs no-border btn-danger" onclick="dereg_module_elb({{step.id}})">Deregister Old</button>
+                <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Reg. New</button>
+                <button class="btn btn-xs no-border btn-danger" onclick="dereg_module_elb({{step.id}})">Dereg. Old</button>
                 {% endif %}
             </td>
             <td>
@@ -286,6 +296,26 @@ function check_module_elb_health(step_id) {
                     data[0]+"/"+data[1]+" InService"
                 );
             }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            show_ajax_error(jqXHR, textStatus, errorThrown);
+        }
+    })
+}
+
+
+function disable_module_alarm(step_id) {
+    $.ajax({
+        url: "/update/ajax/disable_module_alarm/",
+        method: "post",
+        dataType: "json",
+        data: {
+            step_id: step_id
+        },
+        success: function(result) {
+            show_ajax_action(JSON.stringify(result));
+            var message = "Notice: OpenFalcon returns '200 OK' no matter the result. Use the alarm page to make sure alarms are disabled.";
+            show_ajax_action(message);
         },
         error: function(jqXHR, textStatus, errorThrown) {
             show_ajax_error(jqXHR, textStatus, errorThrown);

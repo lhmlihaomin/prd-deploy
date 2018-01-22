@@ -2,12 +2,13 @@
 OpenFalcon related actions.
 """
 
-import requests
 import json
+import requests
 import re
 
 
-def get_falcon_host_name(ec2_instance):
+def get_openfalcon_host_name(instance_name, private_ip_address):
+    """Make openfalcon host name w/ 2-letter region"""
     region_dict = {
         'aps1': 'ap',
         'eu': 'eu',
@@ -20,17 +21,23 @@ def get_falcon_host_name(ec2_instance):
     }
     #    env           module          version          region        az           number
     p = r"([adeprtuv]+)-([a-zA-Z0-9_]+)-([\d\._a-zA-Z]+)-([a-zA-Z\d]+)-([\da-zA-Z])-(\d+)"
-    m = re.match(p, ec2_instance.name)
+    m = re.match(p, instance_name)
     region_code = m.groups()[3]
     host = '/'.join([
-        ec2_instance.name,
+        instance_name,
         region_dict[region_code],
-        ec2_instance.private_ip_address
+        private_ip_address
     ])
     return host
 
 
-def openfalcon_login(login_url, username, password, cert_file=None, cert_key=None, verify=True):
+def openfalcon_login(login_url, 
+                     username, 
+                     password, 
+                     cert_file=None, 
+                     cert_key=None, 
+                     verify=True):
+    """Login using credentials and return a session."""
     session = requests.Session()
     if login_url.startswith("https"):
         # Use HTTPS, set client certificate:
@@ -51,13 +58,19 @@ def openfalcon_login(login_url, username, password, cert_file=None, cert_key=Non
     if body.has_key(u'data') and body.has_key(u'msg'):
         if body[u'data'] == u'' and body[u'msg'] == u'':
             return session
-    print(body)
     raise Exception("Login failed.")
 
 
+def openfalcon_logout(session, logout_url):
+    """Visit logout url to log out session."""
+    response = session.get(logout_url)
+    return response
+
+
 def openfalcon_enable(session, switch_url, ec2_instances):
+    """Use authenticated session to enable alarms."""
     hosts = [
-                get_falcon_host_name(ec2_instance) 
+                get_openfalcon_host_name(ec2_instance.name, ec2_instance.private_ip_address) 
                 for ec2_instance in ec2_instances
             ]
     data = {
@@ -69,8 +82,9 @@ def openfalcon_enable(session, switch_url, ec2_instances):
 
 
 def openfalcon_disable(session, switch_url, ec2_instances):
+    """Use authenticated session to disable alarms."""
     hosts = [
-                get_falcon_host_name(ec2_instance) 
+                get_openfalcon_host_name(ec2_instance.name, ec2_instance.private_ip_address) 
                 for ec2_instance in ec2_instances
             ]
     data = {
@@ -80,15 +94,3 @@ def openfalcon_disable(session, switch_url, ec2_instances):
     response = session.post(switch_url, data)
     return response
 
-
-def main():
-    login_url = "http://ec2-54-223-180-212.cn-north-1.compute.amazonaws.com.cn:12345/auth/login"
-    switch_url = "http://ec2-54-223-180-212.cn-north-1.compute.amazonaws.com.cn:12345/alarm/switch"
-    username = "autorepair"
-    password = "autorepair"
-    session = openfalcon_login(login_url, username, password)
-    return session
-
-
-if __name__ == "__main__":
-    session = main()

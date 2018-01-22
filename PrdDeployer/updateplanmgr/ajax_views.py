@@ -21,11 +21,12 @@ from boto3helper.ec2 import get_instances_by_filters, \
 from boto3helper.tags import to_dict, get_name, get_resource_name
 from ec2mgr.ec2 import run_instances, add_instance_tags, add_volume_tags
 from ec2mgr.models import EC2Instance
+from openfalcon import openfalcon_login, openfalcon_logout, openfalcon_disable
 
 logger = logging.getLogger('common')
 
-def JSONResponse(obj):
-    return HttpResponse(json.dumps(obj), content_type="application/json")
+def JSONResponse(obj, status=200):
+    return HttpResponse(json.dumps(obj), content_type="application/json", status_code=status)
 
 
 @login_required
@@ -371,3 +372,33 @@ def check_module_elb_health(request):
             return JSONResponse(False)
     return JSONResponse([healthy_count, module.instance_count])
 
+
+@login_required
+def disable_module_alarm(request):
+    # Get instance list:
+    step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    module = step.module
+    module = module.previous_module
+    instances = module.instances.all()
+    try:
+        session = openfalcon_login(
+            settings.OPENFALCON['login_url'],
+            settings.OPENFALCON['username'],
+            settings.OPENFALCON['password'],
+            settings.OPENFALCON['cert_file'],
+            settings.OPENFALCON['cert_key']
+        )
+    except:
+        return JSONResponse({'message': 'openfalcon login failed'}, status=500)
+    result = openfalcon_disable(
+        session,
+        settings.OPENFALCON['switch_url'],
+        instances
+    )
+    if not result:
+        return JSONResponse({'message': 'openfalcon disable failed'}, status=500)
+    openfalcon_logout(
+        session,
+        settings.OPENFALCON['logout_url']
+    )
+    return JSONResponse({'result': 'OK'})

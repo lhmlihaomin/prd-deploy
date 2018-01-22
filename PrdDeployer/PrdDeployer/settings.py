@@ -238,10 +238,13 @@ STOP_TIMEOUT = 300
 ALLOWED_HOSTS = ["*", ]
 LOGIN_REDIRECT_URL = "/"
 
-OPENFALCON_LOGIN_URL = ""
-OPENFALCON_SWITCH_URL = ""
-OPENFALCON_CLIENT_CERT_FILE = ""
-OPENFALCON_CLIENT_KEY_FILE = ""
-OPENFALCON_USERNAME = ""
-OPENFALCON_PASSWORD = ""
-
+OPENFALCON = {
+    "login_url": "http://localhost:8001/auth/login",
+    "logout_url": "http://localhost:8001/me/logout",
+    "switch_url": "http://localhost:8001/alarm/switch",
+    "username": "autorepair",
+    "password": "autorepair",
+    "cert_file": "/home/lhm/cert/falcon.crt.pem",
+    "cert_key": "/home/lhm/cert/falcon.key.pem",
+    "alarm_url": "http://localhost:8001/me/alarmEnableOrNotIndex",
+}

@@ -113,7 +113,8 @@ def updateplan(request, plan_id):
     context = {
         'title': "UpdatePlan",
         'plan': plan,
-        'steps': steps
+        'steps': steps,
+        'alarm_url': settings.OPENFALCON['alarm_url'],
     }
     return render(request, 'updateplanmgr/updateplan_ace.html', context)
 
