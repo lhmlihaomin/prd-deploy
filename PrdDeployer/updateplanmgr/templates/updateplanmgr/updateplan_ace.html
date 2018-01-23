@@ -333,7 +333,7 @@ function show_ajax_action(msg) {
 function show_ajax_error(xmlhttprequest, textstatus, message) {
     console.log(message);
     var divStatus = $("<div></div>").html("AJAX ERROR: "+textstatus);
-    var divMessage = $("<div></div>").html("Error message: "+message);
+    var divMessage = $("<div></div>").html("Error message: "+xmlhttprequest.responseJSON['message']);
     var p = $("<p></p>").addClass("body red");
     p.append(divStatus);
     p.append(divMessage);

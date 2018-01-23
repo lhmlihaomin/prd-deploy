@@ -26,7 +26,7 @@ from openfalcon import openfalcon_login, openfalcon_logout, openfalcon_disable
 logger = logging.getLogger('common')
 
 def JSONResponse(obj, status=200):
-    return HttpResponse(json.dumps(obj), content_type="application/json", status_code=status)
+    return HttpResponse(json.dumps(obj), content_type="application/json", status=status)
 
 
 @login_required
@@ -363,7 +363,6 @@ def check_module_elb_health(request):
                 Instances=Instances
             )
             InstanceStates = InstanceStates['InstanceStates']
-            print InstanceStates
             for InstanceState in InstanceStates:
                 if InstanceState['State'] == 'InService':
                     healthy_count += 1

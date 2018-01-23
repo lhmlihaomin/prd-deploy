@@ -95,3 +95,4 @@ pem/
 *.pem
 # sqlite3 files
 *.sqlite3
+settings.py.prd
