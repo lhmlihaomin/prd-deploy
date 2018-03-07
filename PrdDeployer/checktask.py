@@ -77,7 +77,10 @@ class EC2CheckTask:
 
 
     def check_tomcat_service(self):
-        statuspath = "/home/ubuntu/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+        svcdirprefix = self.module.profile.service_dir_prefix
+        statuspath = "/home/ubuntu/%s-%s/%s-%s-%s/WEB-INF/classes"%(
+            svcdirprefix,
+            svcdirprefix,
             self.module.name,
             self.module.name,
             self.module.version
@@ -92,11 +95,12 @@ class EC2CheckTask:
 
 
     def check_nohup_output(self):
-        substr = "cloud-%s service started"%(self.module.name,)
+        svcdirprefix = self.module.profile.service_dir_prefix
+        substr = "%s-%s service started"%(svcdirprefix, self.module.name,)
         filepath = os.path.sep.join([
             "~",
-            "cloud-"+self.module.name,
-            "cloud-"+self.module.name+"-"+self.module.version,
+            svcdirprefix+"-"+self.module.name,
+            svcdirprefix+"-"+self.module.name+"-"+self.module.version,
             "logs",
             "nohup.out"
         ])

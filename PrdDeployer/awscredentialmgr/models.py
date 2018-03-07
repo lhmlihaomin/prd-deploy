@@ -19,10 +19,13 @@ class AWSProfile(models.Model):
     regions = models.ManyToManyField(AWSRegion, related_name="profiles")
     account_id = models.CharField(max_length=500, default="")
 
+
     # These two fields shall always be left empty unless not configured in
     # config file ~/.aws/credentials
     aws_access_key_id = models.CharField(max_length=500, default="", blank=True)
     aws_secret_access_key = models.CharField(max_length=500, default="", blank=True)
+
+    service_dir_prefix = models.CharField(max_length=500, default="cloud", blank=True)
 
     def has_region(self, region):
         """Check if region is associated with this profile."""
@@ -39,4 +42,3 @@ class AWSProfile(models.Model):
     @property
     def env(self):
         return self.name.split('-')[1]
-    

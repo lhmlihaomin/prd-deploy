@@ -96,9 +96,12 @@ class EC2Checker(object):
         return self.cmd_process(process_name)
 
     def cmd_java_status(self, name, version):
-        statuspath = "/home/%s/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+        svcdirprefix = self.module.profile.service_dir_prefix
+        statuspath = "/home/%s/%s-%s/%s-%s-%s/WEB-INF/classes"%(
             self.ec2instance.username,
+            svcdirprefix,
             name,
+            svcdirprefix,
             name,
             version
         )
@@ -107,9 +110,12 @@ class EC2Checker(object):
         return cmd
 
     def cmd_tomcat_service(self, name, version):
-        statuspath = "/home/%s/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+        svcdirprefix = self.module.profile.service_dir_prefix
+        statuspath = "/home/%s/%s-%s/%s-%s-%s/WEB-INF/classes"%(
             self.ec2instance.username,
+            svcdirprefix,
             name,
+            svcdirprefix,
             name,
             version
         )
@@ -126,11 +132,12 @@ class EC2Checker(object):
         return self.cmd_process(process_name)
 
     def cmd_nohup_output(self, name, version):
-        substr = "cloud-%s service started"%(name,)
+        svcdirprefix = self.module.profile.service_dir_prefix
+        substr = "%s-%s service started"%(svcdirprefix, name,)
         filepath = os.path.sep.join([
             "~",
-            "cloud-"+name,
-            "cloud-"+name+"-"+version,
+            svcdirprefix+"-"+name,
+            svcdirprefix+"-"+name+"-"+version,
             "logs",
             "nohup.out"
         ])

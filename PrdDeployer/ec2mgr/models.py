@@ -48,14 +48,15 @@ class EC2Instance(models.Model):
     @property
     def service_scripts(self):
         module = self.modules.first()
+        svcdirprefix = module.profile.service_dir_prefix
         if module is None:
             raise Exception("Module not found.")
         if module.service_type == 'java':
             service_bin_dir = "/"+"/".join([
                 'home',
                 self.username,
-                '-'.join(['cloud', module.name]),
-                '-'.join(['cloud', module.name, module.current_version]),
+                '-'.join([svcdirprefix, module.name]),
+                '-'.join([svcdirprefix, module.name, module.current_version]),
                 'bin'
             ])
             return {
@@ -67,15 +68,15 @@ class EC2Instance(models.Model):
             tomcat_bin_dir = "/"+"/".join([
                 'home',
                 self.username,
-                '-'.join(['cloud', module.name]),
+                '-'.join([svcdirprefix, module.name]),
                 'tomcat',
                 'bin'
             ])
             service_bin_dir = "/"+"/".join([
                 'home',
                 self.username,
-                '-'.join(['cloud', module.name]),
-                '-'.join(['cloud', module.name, module.current_version]),
+                '-'.join([svcdirprefix, module.name]),
+                '-'.join([svcdirprefix, module.name, module.current_version]),
                 'WEB-INF',
                 'classes'
             ])
@@ -90,14 +91,15 @@ class EC2Instance(models.Model):
     @property
     def stop_command(self):
         module = self.modules.first()
+        svcdirprefix = module.profile.service_dir_prefix
         if module is None:
             raise Exception("Module not found.")
         if module.service_type == 'java':
             service_bin_dir = "/"+"/".join([
                 'home',
                 self.username,
-                '-'.join(['cloud', module.name]),
-                '-'.join(['cloud', module.name, module.current_version]),
+                '-'.join([svcdirprefix, module.name]),
+                '-'.join([svcdirprefix, module.name, module.current_version]),
                 'bin'
             ])
             return "/bin/bash %s/stop.sh"%(service_bin_dir,)
@@ -105,7 +107,7 @@ class EC2Instance(models.Model):
             tomcat_bin_dir = "/"+"/".join([
                 'home',
                 self.username,
-                '-'.join(['cloud', module.name]),
+                '-'.join([svcdirprefix, module.name]),
                 'tomcat',
                 'bin'
             ])

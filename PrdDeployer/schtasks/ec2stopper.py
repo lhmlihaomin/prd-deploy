@@ -80,8 +80,11 @@ class EC2Stopper(object):
         }
 
     def cmd_stop_java_service(self, name, version):
-        stoppath = "/home/ubuntu/cloud-%s/cloud-%s-%s/bin"%(
+        svcdirprefix = self.module.profile.service_dir_prefix
+        stoppath = "/home/ubuntu/%s-%s/%s-%s-%s/bin"%(
+            svcdirprefix,
             name,
+            svcdirprefix,
             name,
             version
         )
@@ -90,9 +93,12 @@ class EC2Stopper(object):
         return cmd
 
     def cmd_stop_tomcat(self, name, version):
-        stoppath = "/home/%s/cloud-%s/cloud-%s-%s/WEB-INF/classes"%(
+        svcdirprefix = self.module.profile.service_dir_prefix
+        stoppath = "/home/%s/%s-%s/%s-%s-%s/WEB-INF/classes"%(
             self.ec2instance.username,
+            svcdirprefix,
             name,
+            svcdirprefix,
             name,
             version
         )
