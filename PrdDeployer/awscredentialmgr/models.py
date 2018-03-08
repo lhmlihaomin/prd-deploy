@@ -26,6 +26,7 @@ class AWSProfile(models.Model):
     aws_secret_access_key = models.CharField(max_length=500, default="", blank=True)
 
     service_dir_prefix = models.CharField(max_length=500, default="cloud", blank=True)
+    instance_prefix = models.CharField(max_length=500, default="prd", blank=True)
 
     def has_region(self, region):
         """Check if region is associated with this profile."""

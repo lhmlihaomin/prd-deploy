@@ -94,7 +94,7 @@ class Module(models.Model):
 
     def ami_version_match(self):
         """check if current_version matches with AMI version number"""
-        pattern = "([adeprtuv]+)-ami-([a-zA-Z0-9_]+)-([\d\._a-zA-Z]+)-([a-zA-Z\d]+)-(\d{8})"
+        pattern = "([adefmprtuv]+)-ami-([a-zA-Z0-9_]+)-([\d\._a-zA-Z]+)-([a-zA-Z\d]+)-(\d{8})"
         try:
             content_dict = json.loads(self.configuration)
             m = re.match(pattern, content_dict['image'][0])
@@ -108,12 +108,15 @@ class Module(models.Model):
 
     @property
     def environ(self):
+        return self.instance_prefix
+        """
         if self.profile.name.endswith("alpha"):
             return "dev"
         elif self.profile.name.endswith("beta"):
             return "uat"
         elif self.profile.name.endswith("prd"):
             return "prd"
+        """
 
     @property
     def instance_name_prefix(self):
