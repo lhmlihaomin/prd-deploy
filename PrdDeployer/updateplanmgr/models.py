@@ -108,7 +108,7 @@ class Module(models.Model):
 
     @property
     def environ(self):
-        return self.instance_prefix
+        return self.profile.instance_prefix
         """
         if self.profile.name.endswith("alpha"):
             return "dev"

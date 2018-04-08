@@ -156,7 +156,7 @@ def make_new_version_module(profile, region, module_name, current_version, \
             current_version=new_version
         )
         # set new count when scaling out/in:
-        if module.instance_count != instance_count and instance_count != 0:
+        if module.instance_count != instance_count and instance_count != 0 and instance_count is not None:
             module.instance_count = instance_count
         module.save()
         return module
