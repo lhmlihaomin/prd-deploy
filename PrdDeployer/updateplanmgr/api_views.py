@@ -26,7 +26,7 @@ from ec2mgr.ec2 import add_instance_tags, add_volume_tags, run_instances
 from ec2mgr.models import EC2Instance
 
 from .models import Module, UpdateActionLog, UpdatePlan, UpdateStep
-from .views import make_new_version_module
+from .views import make_new_version_module, make_new_module
 
 
 def token_auth(request):
@@ -132,31 +132,59 @@ def new_updateplan(request):
             plan.save()
             for i, update_step in enumerate(data['update_steps']):
                 region = AWSRegion.objects.get(name=update_step['region'])
-                profile = region.profiles.all()[0]
+                if update_step.has_key('profile'):
+                    profile = AWSProfile.objects.get(name=update_step['profile'])
+                else:
+                    profile = region.profiles.all()[0]
                 load_balancer_names = None
                 if update_step.has_key('load_balancer_names'):
                     load_balancer_names = update_step['load_balancer_names']
-                count = None
-                if update_step.has_key('count'):
-                    count = update_step['count']
-                # create or get new version module:
-                module = make_new_version_module(
-                    profile,
-                    region,
-                    update_step['module'],
-                    update_step['current_version'],
-                    update_step['update_version'],
-                    instance_count=count,
-                    load_balancer_names=load_balancer_names
-                )
-                # additional changes:
-                if update_step.has_key('config'):
-                    launch_conf = json.loads(module.configuration)
-                    for key in update_step['config']:
-                        if launch_conf.has_key(key):
-                            launch_conf.update({key: update_step['config'][key]})
-                    module.configuration = json.dumps(launch_conf, indent=2)
-                module.save()
+                
+                # check if this module already exists:
+                module_exists = Module.objects.filter(
+                    profile=profile, 
+                    region=region, 
+                    name=update_step['module']
+                ).exists()
+                if not module_exists:
+                    print update_step.keys()
+                    # if no such module, create one:
+                    if update_step.has_key('update_version'):
+                        version = update_step['update_version']
+                    elif update_step.has_key('current_version'):
+                        version = update_step['current_version']
+                    module = make_new_module(
+                        profile,
+                        region,
+                        update_step['module'],
+                        version,
+                        update_step['count'],
+                        update_step['config'],
+                        update_step['service_type'],
+                        update_step['load_balancer_names']
+                    )
+                else:
+                    # if an older version already exists, create or get new version module:
+                    count = None
+                    if update_step.has_key('count'):
+                        count = update_step['count']
+                    module = make_new_version_module(
+                        profile,
+                        region,
+                        update_step['module'],
+                        update_step['current_version'],
+                        update_step['update_version'],
+                        instance_count=count,
+                        load_balancer_names=load_balancer_names
+                    )
+                    # additional changes:
+                    if update_step.has_key('config'):
+                        launch_conf = json.loads(module.configuration)
+                        for key in update_step['config']:
+                            if launch_conf.has_key(key):
+                                launch_conf.update({key: update_step['config'][key]})
+                        module.configuration = json.dumps(launch_conf, indent=2)
+                        module.save()
                 # create step:
                 step = UpdateStep(
                     sequence=i,

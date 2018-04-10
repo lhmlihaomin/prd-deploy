@@ -13,7 +13,7 @@ import pytz
 import boto3
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
-from awsresourcemgr.models import AWSResource
+from awsresourcemgr.models import AWSResource, AWSResourceHandler
 from ec2mgr.models import EC2Instance
 from .models import Module, UpdatePlan, UpdateStep, UpdateActionLog
 from boto3helper.ec2 import get_instances_by_filters, \
@@ -128,6 +128,41 @@ def get_module_image(profile, region, module_name, version):
         name__contains="-%s-%s-"%(module_name, version)
     )
     return image
+
+
+def make_new_module(profile, region, module_name, version, \
+    instance_count, configuration, service_type, load_balancer_names):
+    """Create a brand new module"""
+    # Check for AMI image:
+    try:
+        new_image = get_module_image(profile, region, module_name, version)
+    except:
+        raise Exception("ImageNotFound: %s:%s, %s-%s"%(profile.name, region.name, module_name, version))
+    # check for old module:
+    query_set = Module.objects.filter(
+        profile=profile,
+        region=region,
+        name=module_name
+    )
+    if query_set.exists():
+        raise Exception("Module already exists: "+module_name)
+    if type(configuration) == dict:
+        configuration = json.dumps(configuration, indent=2)
+    # create new module:
+    module = Module(
+        name=module_name,
+        profile=profile,
+        region=region,
+        current_version=version,
+        previous_version=version,
+        is_online_version=True,
+        instance_count=instance_count,
+        configuration=configuration,
+        service_type=service_type,
+        load_balancer_names=load_balancer_names
+    )
+    module.save()
+    return module
 
 
 def make_new_version_module(profile, region, module_name, current_version, \

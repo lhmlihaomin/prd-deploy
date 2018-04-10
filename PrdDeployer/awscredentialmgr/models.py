@@ -28,6 +28,12 @@ class AWSProfile(models.Model):
     service_dir_prefix = models.CharField(max_length=500, default="cloud", blank=True)
     instance_prefix = models.CharField(max_length=500, default="prd", blank=True)
 
+    def __str__(self):
+        return self.name
+
+    def __unicode__(self):
+        return unicode(self.name)
+
     def has_region(self, region):
         """Check if region is associated with this profile."""
         return region in self.regions.all()
