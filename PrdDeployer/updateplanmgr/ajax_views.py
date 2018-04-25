@@ -262,7 +262,9 @@ def reg_module_elb(request):
     # Capital variables: boto3 naming style
     Instances = map(
         lambda x: {'InstanceId': x},
-        [instance.instance_id for instance in module.instances.all()]
+        #[instance.instance_id for instance in module.instances.all()]
+        # edit: only register instances with services running:
+        [instance.instance_id for instance in module.instances.filter(service_status='ok')]
     )
     ret = {}
     for LoadBalancerName in module.load_balancer_names.split(','):
