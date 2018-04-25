@@ -385,7 +385,8 @@ def disable_module_alarm(request):
             settings.OPENFALCON['username'],
             settings.OPENFALCON['password'],
             settings.OPENFALCON['cert_file'],
-            settings.OPENFALCON['cert_key']
+            settings.OPENFALCON['cert_key'],
+            False
         )
     except:
         return JSONResponse({'message': 'openfalcon login failed'}, status=500)

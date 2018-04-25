@@ -181,7 +181,7 @@ def make_new_version_module(profile, region, module_name, current_version, \
             current_version=current_version
         )
     except:
-        raise Exception("OldModuleNotFound")
+        raise Exception(module_name+"-"+current_version+": OldModuleNotFound")
     # check if new version module already exists:
     try:
         module = Module.objects.get(
@@ -507,7 +507,7 @@ def actionlogs(request, plan_id):
     }
     return render(request, 'updateplanmgr/actionlogs_ace.html', context=context)
 
-    
+
 @login_required
 def edit_module(request, module_id):
     # Read module info:
