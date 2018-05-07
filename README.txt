@@ -9,3 +9,6 @@ done (one) 7. Add API views. (Consider using django REST framework)
 8. Register only "ok" instances with ELB;
 9. Copy configuration from existing module;
 10. API server: return something meaningful;
+11. Resolve new instance displayed as "Terminated" issue;
+12. Add page to edit instance info manually;
+
