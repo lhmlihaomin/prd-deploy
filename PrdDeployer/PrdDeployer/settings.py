@@ -94,7 +94,7 @@ STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = '/static/'
+STATIC_URL = '/prdbsxt/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -248,3 +248,6 @@ OPENFALCON = {
     "cert_key": "/home/lhm/cert/falcon.key.pem",
     "alarm_url": "http://localhost:8001/me/alarmEnableOrNotIndex",
 }
+
+LOGIN_URL = "/prdbsxt/accounts/login/"
+LOGOUT_URL = "/prdbsxt/accounts/logout/"
