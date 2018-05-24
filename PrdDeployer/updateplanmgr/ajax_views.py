@@ -262,7 +262,9 @@ def reg_module_elb(request):
     # Capital variables: boto3 naming style
     Instances = map(
         lambda x: {'InstanceId': x},
-        [instance.instance_id for instance in module.instances.all()]
+        #[instance.instance_id for instance in module.instances.all()]
+        # edit: only register instances with services running:
+        [instance.instance_id for instance in module.instances.filter(service_status='ok')]
     )
     ret = {}
     for LoadBalancerName in module.load_balancer_names.split(','):
@@ -385,7 +387,8 @@ def disable_module_alarm(request):
             settings.OPENFALCON['username'],
             settings.OPENFALCON['password'],
             settings.OPENFALCON['cert_file'],
-            settings.OPENFALCON['cert_key']
+            settings.OPENFALCON['cert_key'],
+            False
         )
     except:
         return JSONResponse({'message': 'openfalcon login failed'}, status=500)
