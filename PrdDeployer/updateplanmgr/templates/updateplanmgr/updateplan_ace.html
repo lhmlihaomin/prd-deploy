@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block title %}UpdatePlan{% endblock %}
 {% block body %}
-<h3 class="header smaller">
+<h3 class="header smaller" style="margin-top: 320px;">
     {{plan.project_name}}
     <small>
         <i class="icon-double-angle-right"></i>
@@ -90,13 +90,13 @@
     </tbody>
 </table>
 
-<div class="widget-box">
+<div class="widget-box" style="position: fixed; top: 50px; width: 85%;">
     <div class="widget-header widget-header-flat widget-header-small">
         <h5>Action Log</h5>
     </div>
     <div class="widget-body">
         <div class="widget-main">
-            <div style="min-height:500px; overflow:auto;" id="divAjaxMessage"></div>
+            <div style="min-height:300px; height: 300px; overflow:auto;" id="divAjaxMessage"></div>
         </div>
     </div>
 </div>
@@ -108,7 +108,7 @@ function run_module_ec2(step_id) {
     if (!confirm("Run new instances?")) return;
     show_ajax_action("Launching EC2 instances ...");
     $.ajax({
-        url: '/update/ajax/run_module_ec2/',
+        url: '/prdbsxt/update/ajax/run_module_ec2/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -130,7 +130,7 @@ function add_module_ec2_tags(step_id, instance_ids) {
         return;
     show_ajax_action("Adding tags to EC2 instances ...");
     $.ajax({
-        url: '/update/ajax/add_module_ec2_tags/',
+        url: '/prdbsxt/update/ajax/add_module_ec2_tags/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -153,7 +153,7 @@ function add_module_volume_tags(step_id, instance_ids) {
         return;
     show_ajax_action("Adding tags to EBS volumes ...");
     $.ajax({
-        url: '/update/ajax/add_module_volume_tags/',
+        url: '/prdbsxt/update/ajax/add_module_volume_tags/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -175,7 +175,7 @@ function stop_module_ec2(step_id) {
     if (!confirm("Stop these instances?")) return;
     show_ajax_action("Marking instances as 'to_stop' ...");
     $.ajax({
-        url: '/update/ajax/stop_module_ec2/',
+        url: '/prdbsxt/update/ajax/stop_module_ec2/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -196,7 +196,7 @@ function stop_module_previous_ec2(step_id) {
     if (!confirm("Stop old instances?")) return;
     show_ajax_action("Stopping ... Use [Check EC2 Status] to see latest status.");
     $.ajax({
-        url: '/update/ajax/stop_module_previous_ec2/',
+        url: '/prdbsxt/update/ajax/stop_module_previous_ec2/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -217,7 +217,7 @@ function reg_module_elb(step_id) {
     if (!confirm("Register new instances?")) return;
     show_ajax_action("Registering instances with load balancers ...");
     $.ajax({
-        url: '/update/ajax/reg_module_elb/',
+        url: '/prdbsxt/update/ajax/reg_module_elb/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -238,7 +238,7 @@ function dereg_module_elb(step_id) {
     if (!confirm("Deregister old instances?")) return;
     show_ajax_action("Deregistering instances from load balancers ...");
     $.ajax({
-        url: '/update/ajax/dereg_module_elb/',
+        url: '/prdbsxt/update/ajax/dereg_module_elb/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -259,7 +259,7 @@ function finish_step(step_id) {
     if (!confirm("Finish this step?")) return;
     show_ajax_action("Finishing step ...");
     $.ajax({
-        url: '/update/ajax/finish_step/',
+        url: '/prdbsxt/update/ajax/finish_step/',
         method: 'post',
         dataType: 'json',
         data: {
@@ -283,7 +283,7 @@ function finish_step(step_id) {
 
 function check_module_elb_health(step_id) {
     $.ajax({
-        url: "/update/ajax/check_module_elb_health/",
+        url: "/prdbsxt/update/ajax/check_module_elb_health/",
         method: "post",
         dataType: "json",
         data: {
@@ -306,7 +306,7 @@ function check_module_elb_health(step_id) {
 
 function disable_module_alarm(step_id) {
     $.ajax({
-        url: "/update/ajax/disable_module_alarm/",
+        url: "/prdbsxt/update/ajax/disable_module_alarm/",
         method: "post",
         dataType: "json",
         data: {
@@ -326,7 +326,10 @@ function disable_module_alarm(step_id) {
 
 function show_ajax_action(msg) {
     var p = $("<p></p>").html(msg).addClass("body");
+    var d = new Date()
+    var divTimestamp = $("<div style='font-style: italic; background-color: #EFEFEF'></div>").html(d.toString());
     p.prependTo("#divAjaxMessage");
+    divTimestamp.prependTo("#divAjaxMessage");
 }
 
 
@@ -334,7 +337,10 @@ function show_ajax_error(xmlhttprequest, textstatus, message) {
     console.log(message);
     var divStatus = $("<div></div>").html("AJAX ERROR: "+textstatus);
     var divMessage = $("<div></div>").html("Error message: "+xmlhttprequest.responseJSON['message']);
+    var d = new Date()
+    var divTimestamp = $("<div></div>").html(d.toString());
     var p = $("<p></p>").addClass("body red");
+    p.append(divTimestamp);
     p.append(divStatus);
     p.append(divMessage);
     p.prependTo("#divAjaxMessage");
