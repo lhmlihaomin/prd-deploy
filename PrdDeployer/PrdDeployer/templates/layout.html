@@ -17,7 +17,7 @@
 
 		<!-- fonts -->
 
-		
+
 
 		<!-- ace styles -->
 
@@ -159,7 +159,7 @@
 
 				<div class="main-content">
 
-					<div class="page-content"> 
+					<div class="page-content">
 						<div class="page-header">
 							<h1>{{title}}</h1>
 						</div><!-- /.page-header -->
@@ -210,9 +210,6 @@
 </script>
 <![endif]-->
 
-		<script type="text/javascript">
-			if("ontouchend" in document) document.write("<script src='{% static 'js/jquery.mobile.custom.min.js' %}'>"+"<"+"script>");
-		</script>
 		<script src="{% static 'js/bootstrap.min.js' %}"></script>
 		<script src="{% static 'js/typeahead-bs2.min.js' %}"></script>
 
@@ -223,7 +220,6 @@
 		<![endif]-->
 
 		<script src="{% static 'js/jquery-ui-1.10.3.custom.min.js' %}"></script>
-		<script src="{% static 'js/jquery.ui.touch-punch.min.js' %}"></script>
 		<script src="{% static 'js/jquery.slimscroll.min.js' %}"></script>
 		<script src="{% static 'js/jquery.easy-pie-chart.min.js' %}"></script>
 		<script src="{% static 'js/jquery.sparkline.min.js' %}"></script>
@@ -273,7 +269,7 @@ $.ajaxSetup({
     },
     error: handleAjaxError
 });
- 
+
 $('[data-rel=popover]').popover({html:true});
 		</script>
 {% block page_js %}{% endblock %}
