@@ -587,3 +587,8 @@ def edit_module(request, module_id):
         }
         # Render page:
         return render(request, 'updateplanmgr/edit_module_ace.html', context=context)
+
+
+@login_required
+def kick_devices(request, plan_id):
+    return HttpResponse("Kick Devices.")
