@@ -590,5 +590,9 @@ def edit_module(request, module_id):
 
 
 @login_required
-def kick_devices(request, plan_id):
-    return HttpResponse("Kick Devices.")
+def kick_devices(request, plan_id, step_id):
+    plan = UpdatePlan.objects.get(pk=plan_id)
+    step = UpdateStep.objects.get(pk=step_id)
+    module = step.module
+    response = ", ".join([module.name, module.current_version, module.load_balancer_names])
+    return HttpResponse(response)
