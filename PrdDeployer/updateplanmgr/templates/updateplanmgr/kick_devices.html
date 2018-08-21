@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+{% block title %}Kick Devices{% endblock %}
+{% block body %}
+
+<h3>Actions</h3>
+<button id="btnDeregAll" class="btn btn-sm btn-warning">Deregister from all load balancers</button>
+<button id="btnCloseAll" class="btn btn-sm btn-danger">Call "exec/closeAll"</button>
+<button id="btnRefreshDeviceNum" class="btn btn-sm btn-info">Refresh device numbers</button>
+
+<h3 class="header smaller">Connectors to "exec/closeAll" in this batch</h3>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th>Host</th><th>DeviceNum</th><th>IP</th>
+    </thead>
+    <tbody id="tbodyConnectors">
+    </tbody>
+</table>
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+console.log("before");
+var connectors_to_kick = {{connectors_json|safe}};
+console.log("after");
+
+
+function showConnectors() {
+    var tbody = $('#tbodyConnectors');
+    tbody.empty();
+    for (var i=0; i<connectors_to_kick.length; i++) {
+        var tr = $("<tr></tr>");
+        tr.append("<td>"+connectors_to_kick[i].name+"</td>")
+          .append("<td>"+connectors_to_kick[i].device_num+"</td>")
+          .append("<td>"+connectors_to_kick[i].ip+"</td>");
+        tr.appendTo(tbody);
+    }
+}
+
+
+function deregisterFromAll() {
+    var tip = "This will deregister all instances from all load balancers.\nContinue?";
+    if (!confirm(tip)) {
+        return false;
+    }
+    console.log("Deregister connectors from all ELBs ...");
+}
+
+$('#btnDeregAll').click(function(){deregisterFromAll();})
+
+function callCloseAll() {
+    var tip = "This will close all conns. Please confirm:";
+    if (!confirm(tip)) {
+        return false;
+    }
+    console.log("Calling closeAll on all hosts ...");
+}
+
+$('#btnCloseAll').click(function(){callCloseAll();})
+
+function refreshDeviceNumbers() {
+    console.log("Refreshing device numbers ...");
+}
+
+$('#btnRefreshDeviceNum').click(function(){refreshDeviceNumbers();});
+
+$(document).ready(function() {
+    showConnectors();
+})
+</script>
+{% endblock %}

@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.conf import settings
 import pytz
 import boto3
+import requests
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource, AWSResourceHandler
@@ -589,10 +590,93 @@ def edit_module(request, module_id):
         return render(request, 'updateplanmgr/edit_module_ace.html', context=context)
 
 
+class Connector(object):
+    """
+    Information about a `connector` like server.
+    """
+    def __init__(self, instance, module_name):
+        self.stat_url_format = "http://{IP}:{PORT}/jolokia/read/{MODULE_NAME}:name=StatJmx/stat"
+        self.close_url_format = \
+            "http://{IP}:{PORT}/jolokia/exec/{MODULE_NAME}:name=Controller/closeAll/{STEP_SIZE}/{INTERVAL}"
+        self.module_name = module_name
+        self.device_num = 0
+        
+        self.instance_id = instance.instance_id
+        self.ip = instance.private_ip_address
+        self.name = instance.name
+
+    def get_online_device_number(self):
+        """Call JMX `stat` to get onlineDeviceNum"""
+        url = self.stat_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name)
+        response = requests.get(url)
+        result = json.loads(response.text)
+        self.device_num = result['value']['stat']['onlineDeviceNum']
+        return self.device_num
+
+    def close_all_connections(self):
+        """Call JMX `exec/closeAll` to kickk all connected devices"""
+        step_size = int( float(self.device_num) / 50.0 / 60.0 + 0.5)
+        url = self.close_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name, STEP_SIZE=step_size, INTERVAL=1000)
+        response = requests.get(url)
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'ip': self.ip,
+            'device_num': self.device_num,
+        }
+
+
 @login_required
 def kick_devices(request, plan_id, step_id):
+    """Closes client/device TCP connections for `connector` like modules"""
+    def get_elb_instances(elb_names, module):
+        return ["i-abcd1234", ]
+        """Get instance ids registered with this ELB"""
+        s = module.profile.get_session(module.region)
+        elb = s.client('elb')
+        result = elb.describe_load_balancers(
+            LoadBalancerNames=elb_names
+        )
+        result = result['LoadBalancerDescriptions'][0]
+        elb_instance_ids = [x['InstanceId'] for x in result['Instances']]
+        return elb_instance_ids
+
+    BATCH_SIZE = 1800000
     plan = UpdatePlan.objects.get(pk=plan_id)
     step = UpdateStep.objects.get(pk=step_id)
     module = step.module
-    response = ", ".join([module.name, module.current_version, module.load_balancer_names])
-    return HttpResponse(response)
+    elb_names = map(unicode.strip, module.load_balancer_names)
+
+    # Get old version instances registered with ELBs:
+    instances = [i for i in module.instances.all()]
+    elb_instance_ids = get_elb_instances(elb_names, module)
+    connectors_old_module = list()
+    for instance in instances:
+        if instance.instance_id in elb_instance_ids:
+            connectors_old_module.append(Connector(instance, module.name))
+
+    # Group instances according to device number:
+    connectors_to_kick = list()
+    total_device_num = 0
+    for connector in connectors_old_module:
+        connector.get_online_device_number()
+    for connector in connectors_old_module:
+        total_device_num += connector.device_num
+        if total_device_num >= BATCH_SIZE:
+            break
+        else:
+            connectors_to_kick.append(connector)
+    
+    # Display connectors that are to be deregistered:
+    ret = ""
+    #ret += elb_names
+    for connector in connectors_to_kick:
+        ret += "{0}: {1} ({2})\r\n".format(connector.name, connector.device_num, connector.ip)
+    context = {
+        'title': 'Kick Devices',
+        'connectors': connectors_to_kick,
+        'connectors_json': json.dumps([c.to_dict() for c in connectors_to_kick]),
+    }
+    return render(request, 'updateplanmgr/kick_devices.html', context=context)
+
