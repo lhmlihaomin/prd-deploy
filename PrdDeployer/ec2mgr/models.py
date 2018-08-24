@@ -1,3 +1,6 @@
+import json
+import requests
+
 from django.db import models
 
 from boto3helper.tags import get_resource_name
@@ -115,3 +118,42 @@ class EC2Instance(models.Model):
             return cmd
         else:
             raise Exception("Unknown service type: "+module.service_type)
+
+
+class Connector(object):
+    """
+    Information about a `connector` like server.
+    """
+    def __init__(self, instance, module_name):
+        self.stat_url_format = "http://{IP}:{PORT}/jolokia/read/{MODULE_NAME}:name=StatJmx/stat"
+        self.close_url_format = \
+            "http://{IP}:{PORT}/jolokia/exec/{MODULE_NAME}:name=Controller/closeAll/{STEP_SIZE}/{INTERVAL}"
+        self.module_name = module_name
+        self.device_num = 0
+        
+        self.id = instance.id
+        self.instance_id = instance.instance_id
+        self.ip = instance.private_ip_address
+        self.name = instance.name
+
+    def get_online_device_number(self):
+        """Call JMX `stat` to get onlineDeviceNum"""
+        url = self.stat_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name)
+        response = requests.get(url)
+        result = json.loads(response.text)
+        self.device_num = result['value']['stat']['onlineDeviceNum']
+        return self.device_num
+
+    def close_all_connections(self):
+        """Call JMX `exec/closeAll` to kickk all connected devices"""
+        step_size = int( float(self.device_num) / 50.0 / 60.0 + 0.5)
+        url = self.close_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name, STEP_SIZE=step_size, INTERVAL=1000)
+        response = requests.get(url)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'ip': self.ip,
+            'device_num': self.device_num,
+        }

@@ -20,7 +20,7 @@ from boto3helper.ec2 import get_instances_by_filters, \
     get_instance_module_version
 from boto3helper.tags import to_dict, get_name, get_resource_name
 from ec2mgr.ec2 import run_instances, add_instance_tags, add_volume_tags
-from ec2mgr.models import EC2Instance
+from ec2mgr.models import EC2Instance, Connector
 from openfalcon import openfalcon_login, openfalcon_logout, openfalcon_disable
 
 logger = logging.getLogger('common')
@@ -404,3 +404,32 @@ def disable_module_alarm(request):
         settings.OPENFALCON['logout_url']
     )
     return JSONResponse({'result': 'OK'})
+
+
+# kick devices views:
+@login_required
+def get_connector_device_numbers(request):
+    ids = request.GET.getlist('ids[]')
+    instances = EC2Instance.objects.filter(id__in=ids)
+    connectors = list()
+    for instance in instances:
+        connectors.append(Connector(instance, instance.modules.first().name))
+    for connector in connectors:
+        connector.get_online_device_number()
+    ret = [c.to_dict() for c in connectors]
+    return JSONResponse(ret)
+
+
+@login_required
+def init_connector_close_all(request):
+    ids = request.POST.getlist('ids[]')
+    instances = EC2Instance.objects.filter(id__in=ids)
+    connectors = list()
+    for instance in instances:
+        connectors.append(Connector(instance, instance.modules.first().name))
+    for connector in connectors:
+        connector.close_all_connections()
+    for connector in connectors:
+        connector.get_online_device_number()
+    ret = [c.to_dict() for c in connectors]
+    return JSONResponse(ret)

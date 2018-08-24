@@ -32,6 +32,9 @@ urlpatterns = [
     url(r'ajax/check_module_elb_health/', ajax_views.check_module_elb_health, name='ajax.check_module_elb_health'),
     url(r'ajax/disable_module_alarm/', ajax_views.disable_module_alarm, name='ajax.disable_module_alarm'),
 
+    url(r'ajax/get_connector_device_numbers/', ajax_views.get_connector_device_numbers, name='ajax.get_connector_device_numbers'),
+    url(r'ajax/init_connector_close_all/', ajax_views.init_connector_close_all, name='ajax.init_connector_close_all'),
+
     url(r'ajax/finish_step/', ajax_views.finish_step, name='ajax.finish_step'),
 
     url(r'api/new_updateplan/', api_views.new_updateplan, name='api.new_updateplan'),
