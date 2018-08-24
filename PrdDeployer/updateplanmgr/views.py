@@ -625,6 +625,8 @@ def kick_devices(request, plan_id, step_id):
     for connector in connectors_old_module:
         connector.get_online_device_number()
     for connector in connectors_old_module:
+        if type(connector.device_num) is not int:
+            continue
         total_device_num += connector.device_num
         if total_device_num >= BATCH_SIZE:
             break

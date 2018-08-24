@@ -428,8 +428,8 @@ def init_connector_close_all(request):
     for instance in instances:
         connectors.append(Connector(instance, instance.modules.first().name))
     for connector in connectors:
-        connector.close_all_connections()
-    for connector in connectors:
         connector.get_online_device_number()
+    for connector in connectors:
+        connector.close_all_connections()
     ret = [c.to_dict() for c in connectors]
     return JSONResponse(ret)

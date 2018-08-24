@@ -139,16 +139,23 @@ class Connector(object):
     def get_online_device_number(self):
         """Call JMX `stat` to get onlineDeviceNum"""
         url = self.stat_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name)
-        response = requests.get(url)
-        result = json.loads(response.text)
-        self.device_num = result['value']['stat']['onlineDeviceNum']
-        return self.device_num
+        try:
+            response = requests.get(url)
+            result = json.loads(response.text)
+            self.device_num = result['value']['stat']['onlineDeviceNum']
+            return self.device_num
+        except:
+            self.device_num = "Error"
+            return self.device_num
 
     def close_all_connections(self):
         """Call JMX `exec/closeAll` to kickk all connected devices"""
         step_size = int( float(self.device_num) / 50.0 / 60.0 + 0.5)
         url = self.close_url_format.format(IP=self.ip, PORT=8778, MODULE_NAME=self.module_name, STEP_SIZE=step_size, INTERVAL=1000)
-        response = requests.get(url)
+        try:
+            response = requests.get(url)
+        except:
+            pass
 
     def to_dict(self):
         return {
