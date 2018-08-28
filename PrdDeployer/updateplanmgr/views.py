@@ -11,10 +11,11 @@ from django.utils import timezone
 from django.conf import settings
 import pytz
 import boto3
+import requests
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from awsresourcemgr.models import AWSResource, AWSResourceHandler
-from ec2mgr.models import EC2Instance
+from ec2mgr.models import EC2Instance, Connector
 from .models import Module, UpdatePlan, UpdateStep, UpdateActionLog
 from boto3helper.ec2 import get_instances_by_filters, \
     get_instance_module_version
@@ -587,3 +588,65 @@ def edit_module(request, module_id):
         }
         # Render page:
         return render(request, 'updateplanmgr/edit_module_ace.html', context=context)
+
+
+@login_required
+def kick_devices(request, plan_id, step_id):
+    """Closes client/device TCP connections for `connector` like modules"""
+    def get_elb_instances(elb_names, module):
+        return ["i-abcd1234", "i-abcd2234", "i-abcd3234"]
+        """Get instance ids registered with this ELB"""
+        s = module.profile.get_session(module.region)
+        elb = s.client('elb')
+        result = elb.describe_load_balancers(
+            LoadBalancerNames=elb_names
+        )
+        result = result['LoadBalancerDescriptions'][0]
+        elb_instance_ids = [x['InstanceId'] for x in result['Instances']]
+        return elb_instance_ids
+
+    try:
+        max_devs_per_hr = int(request.GET.get('max'))
+    except:
+        max_devs_per_hr = 1800000
+    plan = UpdatePlan.objects.get(pk=plan_id)
+    step = UpdateStep.objects.get(pk=step_id)
+    module = step.module
+    elb_names = map(unicode.strip, module.load_balancer_names.split(','))
+
+    # Get old version instances registered with ELBs:
+    instances = [i for i in module.instances.all()]
+    elb_instance_ids = get_elb_instances(elb_names, module)
+    connectors_old_module = list()
+    for instance in instances:
+        if instance.instance_id in elb_instance_ids:
+            connectors_old_module.append(Connector(instance, module.name))
+
+    # Group instances according to device number:
+    connectors_to_kick = list()
+    total_device_num = 0
+    for connector in connectors_old_module:
+        connector.get_online_device_number()
+    for connector in connectors_old_module:
+        if type(connector.device_num) is not int:
+            continue
+        total_device_num += connector.device_num
+        if total_device_num >= max_devs_per_hr:
+            total_device_num -= connector.device_num
+            break
+        else:
+            connectors_to_kick.append(connector)
+    
+    # Display connectors that are to be deregistered:
+    ret = ""
+    #ret += elb_names
+    for connector in connectors_to_kick:
+        ret += "{0}: {1} ({2})\r\n".format(connector.name, connector.device_num, connector.ip)
+    context = {
+        'title': 'Kick Devices',
+        'total_device_num': total_device_num,
+        'elb_names': elb_names,
+        'connectors': connectors_to_kick,
+        'connectors_json': json.dumps([c.to_dict() for c in connectors_to_kick]),
+    }
+    return render(request, 'updateplanmgr/kick_devices.html', context=context)

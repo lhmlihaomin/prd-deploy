@@ -1,0 +1,125 @@
+{% extends 'layout.html' %}
+{% block title %}Kick Devices{% endblock %}
+{% block body %}
+
+<h3>Actions</h3>
+<button id="btnDeregAll" class="btn btn-sm btn-warning">Deregister from all load balancers</button>
+<button id="btnCloseAll" class="btn btn-sm btn-danger">Call "exec/closeAll"</button>
+<button id="btnRefreshDeviceNum" class="btn btn-sm btn-info">Refresh device numbers</button>
+
+<h3 class="header smaller">Load Balancers</h3>
+<table class="table table-bordered">
+    <tr>
+        {% for name in elb_names %}
+        <td>{{name}}</td>
+        {% endfor %}
+    </tr>
+</table>
+
+<h3 class="header smaller">Connectors to "exec/closeAll" in this batch</h3>
+<div>Total device number: {{total_device_num}}</div>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr><th>Host</th><th>DeviceNum</th><th>IP</th>
+    </thead>
+    <tbody id="tbodyConnectors">
+    </tbody>
+</table>
+{% endblock %}
+
+{% block page_js %}
+<script type="text/javascript">
+var connectors_to_kick = {{connectors_json|safe}};
+/*var connectors_to_kick = [
+    {"ip": "192.168.204.142", "device_num": 0, "id": 1, "name": "dev-fakeconnector-1.0.0-cnn1-a-000"},
+    {"ip": "192.168.204.143", "device_num": 0, "id": 2, "name": "dev-fakeconnector-1.0.0-cnn1-a-001"},
+    {"ip": "192.168.204.144", "device_num": 0, "id": 3, "name": "dev-fakeconnector-1.0.0-cnn1-a-002"}
+];*/
+
+function showConnectors() {
+    var tbody = $('#tbodyConnectors');
+    tbody.empty();
+    for (var i=0; i<connectors_to_kick.length; i++) {
+        var tr = $("<tr></tr>");
+        tr.append("<td>"+connectors_to_kick[i].name+"</td>")
+          .append("<td>"+connectors_to_kick[i].device_num+"</td>")
+          .append("<td>"+connectors_to_kick[i].ip+"</td>");
+        tr.appendTo(tbody);
+    }
+}
+
+
+function deregisterFromAll() {
+    var tip = "This will deregister all instances from all load balancers.\nContinue?";
+    if (!confirm(tip)) {
+        return false;
+    }
+    console.log("Deregister connectors from all ELBs ...");
+}
+
+function callCloseAll() {
+    var tip = "This will close all conns. Please confirm:";
+    if (!confirm(tip)) {
+        return false;
+    }
+    //console.log("Calling closeAll on all hosts ...");
+    initConnectorCloseAll();
+}
+
+function refreshDeviceNumbers() {
+    getConnectorDeviceNumbers();
+}
+
+function getConnectorDeviceNumbers() {
+    var connector_ids = [];
+    for (var i=0;i<connectors_to_kick.length;i++) {
+        connector_ids.push(connectors_to_kick[i].id);
+    }
+    $.ajax({
+        url: "prdbsxt/update/ajax/get_connector_device_numbers/",
+        method: "get",
+        dataType: "json",
+        data: {
+            ids: connector_ids
+        },
+        success: function(result) {
+            connectors_to_kick = result;
+            showConnectors();
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(textStatus+"\r\n"+message);
+        }
+    })
+}
+
+function initConnectorCloseAll() {
+    var connector_ids = [];
+    for (var i=0;i<connectors_to_kick.length;i++) {
+        connector_ids.push(connectors_to_kick[i].id);
+    }
+    $.ajax({
+        url: "prdbsxt/update/ajax/init_connector_close_all/",
+        method: "post",
+        dataType: "json",
+        data: {
+            ids: connector_ids
+        },
+        success: function(result) {
+            console.log(result);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(textStatus+"\r\n"+message);
+        }
+    })
+}
+
+
+$(document).ready(function() {
+    $('#btnDeregAll').click(function(){deregisterFromAll();})
+    $('#btnCloseAll').click(function(){callCloseAll();})
+    $('#btnRefreshDeviceNum').click(function(){refreshDeviceNumbers();});
+
+    showConnectors();
+})
+</script>
+{% endblock %}

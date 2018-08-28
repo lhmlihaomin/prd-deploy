@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^edit_module_json/(?P<module_id>\d+)/$', views.edit_module_json, name='edit_module_json'),
     url(r'^updateplans/$', views.updateplans, name='updateplans'),
     url(r'^updateplan/(?P<plan_id>\d+)/$', views.updateplan, name='updateplan'),
+    url(r'^updateplan/(?P<plan_id>\d+)/kickdevices/(?P<step_id>\d+)/$', views.kick_devices, name='kickdevices'),
     url(r'^new_updateplan/$', views.new_updateplan, name='new_updateplan'),
     url(r'^new_module/$', views.new_module, name='new_module'),
     url(r'^fix_service_types/$', views.fix_service_types, name='fix_service_types'),
@@ -30,6 +31,9 @@ urlpatterns = [
     url(r'ajax/dereg_module_elb/', ajax_views.dereg_module_elb, name='ajax.dereg_module_ec2'),
     url(r'ajax/check_module_elb_health/', ajax_views.check_module_elb_health, name='ajax.check_module_elb_health'),
     url(r'ajax/disable_module_alarm/', ajax_views.disable_module_alarm, name='ajax.disable_module_alarm'),
+
+    url(r'ajax/get_connector_device_numbers/', ajax_views.get_connector_device_numbers, name='ajax.get_connector_device_numbers'),
+    url(r'ajax/init_connector_close_all/', ajax_views.init_connector_close_all, name='ajax.init_connector_close_all'),
 
     url(r'ajax/finish_step/', ajax_views.finish_step, name='ajax.finish_step'),
 

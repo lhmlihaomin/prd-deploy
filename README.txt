@@ -7,8 +7,8 @@ done 4. Read "service_type" from module object instead of config file;
 done 6. Add page feed back when sending AJAX requests.
 done (one) 7. Add API views. (Consider using django REST framework)
 8. Register only "ok" instances with ELB;
-9. Copy configuration from existing module;
-10. API server: return something meaningful;
+done 9. Copy configuration from existing module;
+done 10. API server: return something meaningful;
 11. Resolve new instance displayed as "Terminated" issue;
 12. Add page to edit instance info manually;
 
