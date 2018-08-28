@@ -605,7 +605,10 @@ def kick_devices(request, plan_id, step_id):
         elb_instance_ids = [x['InstanceId'] for x in result['Instances']]
         return elb_instance_ids
 
-    BATCH_SIZE = 1800000
+    try:
+        max_devs_per_hr = int(request.GET.get('max'))
+    except:
+        max_devs_per_hr = 1800000
     plan = UpdatePlan.objects.get(pk=plan_id)
     step = UpdateStep.objects.get(pk=step_id)
     module = step.module
@@ -628,7 +631,8 @@ def kick_devices(request, plan_id, step_id):
         if type(connector.device_num) is not int:
             continue
         total_device_num += connector.device_num
-        if total_device_num >= BATCH_SIZE:
+        if total_device_num >= max_devs_per_hr:
+            total_device_num -= connector.device_num
             break
         else:
             connectors_to_kick.append(connector)
@@ -640,6 +644,7 @@ def kick_devices(request, plan_id, step_id):
         ret += "{0}: {1} ({2})\r\n".format(connector.name, connector.device_num, connector.ip)
     context = {
         'title': 'Kick Devices',
+        'total_device_num': total_device_num,
         'elb_names': elb_names,
         'connectors': connectors_to_kick,
         'connectors_json': json.dumps([c.to_dict() for c in connectors_to_kick]),
