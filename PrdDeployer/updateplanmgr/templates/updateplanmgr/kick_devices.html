@@ -29,6 +29,9 @@
 
 {% block page_js %}
 <script type="text/javascript">
+var updateplan_id = {{updateplan_id}};
+var step_id = {{step_id}};
+var elb_names = {{elb_names_json|safe}};
 var connectors_to_kick = {{connectors_json|safe}};
 /*var connectors_to_kick = [
     {"ip": "192.168.204.142", "device_num": 0, "id": 1, "name": "dev-fakeconnector-1.0.0-cnn1-a-000"},
@@ -54,7 +57,8 @@ function deregisterFromAll() {
     if (!confirm(tip)) {
         return false;
     }
-    console.log("Deregister connectors from all ELBs ...");
+    //console.log("Deregister connectors from all ELBs ...");
+    deregisterConnectors();
 }
 
 function callCloseAll() {
@@ -68,6 +72,32 @@ function callCloseAll() {
 
 function refreshDeviceNumbers() {
     getConnectorDeviceNumbers();
+}
+
+
+function deregisterConnectors() {
+    console.log(updateplan_id);
+    console.log(step_id);
+    var connector_ids = [];
+    for (var i=0;i<connectors_to_kick.length;i++) {
+        connector_ids.push(connectors_to_kick[i].id);
+    }
+    $.ajax({
+        url: "prdbsxt/update/ajax/deregister_connectors/",
+        method: "post",
+        dataType: "json",
+        data: {
+            step_id: step_id,
+            elb_names: elb_names,
+            ids: connector_ids
+        },
+        success: function(result) {
+            console.log(result);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(textStatus+"\r\n"+message);
+        }
+    })
 }
 
 function getConnectorDeviceNumbers() {

@@ -408,6 +408,29 @@ def disable_module_alarm(request):
 
 # kick devices views:
 @login_required
+def deregister_connectors(request):
+    step_id = request.POST.get('step_id')
+    step = UpdateStep.objects.get(pk=step_id)
+    elb_names = request.POST.getlist('elb_names[]')
+    ids = request.POST.getlist('ids[]')
+    instances = EC2Instance.objects.filter(id__in=ids)
+    param_instance_ids = [{'InstanceId': i.instance_id} for i in instances]
+    
+    session = step.module.profile.get_session(step.module.region)
+    elb = session.client('elb')
+
+    for elb_name in elb_names:
+        elb.deregister_instances_from_load_balancer(
+            LoadBalancerName=elb_name,
+            Instances=param_instance_ids
+        )
+
+    return JSONResponse([step_id, elb_names, ids])
+    
+
+
+
+@login_required
 def get_connector_device_numbers(request):
     ids = request.GET.getlist('ids[]')
     instances = EC2Instance.objects.filter(id__in=ids)
@@ -433,3 +456,10 @@ def init_connector_close_all(request):
         connector.close_all_connections()
     ret = [c.to_dict() for c in connectors]
     return JSONResponse(ret)
+
+
+@login_required
+def dereg_connectors_from_lbs(request):
+    ids = request.POST.getlist('ids[]')
+    instances = EC2Instance.objects.filter(id__in=ids)
+    

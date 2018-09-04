@@ -644,8 +644,11 @@ def kick_devices(request, plan_id, step_id):
         ret += "{0}: {1} ({2})\r\n".format(connector.name, connector.device_num, connector.ip)
     context = {
         'title': 'Kick Devices',
+        'updateplan_id': plan_id,
+        'step_id': step_id,
         'total_device_num': total_device_num,
         'elb_names': elb_names,
+        'elb_names_json': json.dumps(elb_names),
         'connectors': connectors_to_kick,
         'connectors_json': json.dumps([c.to_dict() for c in connectors_to_kick]),
     }

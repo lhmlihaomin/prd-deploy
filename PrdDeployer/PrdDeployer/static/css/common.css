@@ -2,29 +2,6 @@ html,body{
     font-size: 14px;
     font-family: Inconsolata, "Ubuntu Mono", Consolas;
 }
-table{
-    border-collapse: collapse;
-}
-tbody>tr:hover{
-    background-color:#eeeeee;
-}
-th,td{
-    border: 1px solid black;
-    padding: 5px;
-    width: auto;
-}
-#tableUpdatePlanInfo input{
-    width: 480px;
-}
-#tableUpdatePlanInfo textarea{
-    width: 480px;
-    height: 240px;
-}
-#divAjaxMessage {
-    width:1000px;
-    height:500px;
-    margin-top:2em;
-    overflow:auto;
-    border:1px solid black;
-    padding:1em;
+tr.deviceNotKick {
+    color: lightgray;
 }

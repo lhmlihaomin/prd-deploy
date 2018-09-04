@@ -25,9 +25,7 @@ urlpatterns = [
     # Uncomment the next line to enable the admin:
     url(r'^prdbsxt/admin/', include(admin.site.urls)),
 
-    # updatemgr:
-    url(r'^prdbsxt/$', lambda r: HttpResponseRedirect('update/'), name="home"),
-
+    # updateplanmgr
     url(r'^prdbsxt/update/', include(updateplanmgr.urls, namespace='updateplanmgr', app_name='updateplanmgr')),
     # awsresourcemgr:
     url(r'^prdbsxt/awsres/', include(awsresourcemgr.urls, namespace='awsresourcemgr', app_name='awsresourcemgr')),
@@ -37,4 +35,7 @@ urlpatterns = [
     url(r'^prdbsxt/accounts/login/', login,
         {'template_name': 'admin/login.html'}),
     url(r'^prdbsxt/accounts/logout/', logout, name='logout'),
+
+    # Redirect any other requests to home page:
+    url(r'^prdbsxt/$', lambda r: HttpResponseRedirect('update/'), name="home"),
 ]
