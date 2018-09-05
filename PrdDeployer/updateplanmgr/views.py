@@ -594,7 +594,6 @@ def edit_module(request, module_id):
 def kick_devices(request, plan_id, step_id):
     """Closes client/device TCP connections for `connector` like modules"""
     def get_elb_instances(elb_names, module):
-        return ["i-abcd1234", "i-abcd2234", "i-abcd3234"]
         """Get instance ids registered with this ELB"""
         s = module.profile.get_session(module.region)
         elb = s.client('elb')

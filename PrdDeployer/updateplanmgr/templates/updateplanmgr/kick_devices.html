@@ -82,6 +82,10 @@ function deregisterConnectors() {
     for (var i=0;i<connectors_to_kick.length;i++) {
         connector_ids.push(connectors_to_kick[i].id);
     }
+    bootbox.dialog({
+        message: "Deregistering connectors ...",
+        closeButton: false
+    })
     $.ajax({
         url: "prdbsxt/update/ajax/deregister_connectors/",
         method: "post",
@@ -93,8 +97,10 @@ function deregisterConnectors() {
         },
         success: function(result) {
             console.log(result);
+            bootbox.hideAll();
         },
         error: function(jqXHR, textStatus, errorThrown) {
+            bootbox.hideAll();
             alert(textStatus+"\r\n"+message);
         }
     })
@@ -105,6 +111,10 @@ function getConnectorDeviceNumbers() {
     for (var i=0;i<connectors_to_kick.length;i++) {
         connector_ids.push(connectors_to_kick[i].id);
     }
+    bootbox.dialog({
+        message: "Reloading device numbers ...",
+        closeButton: false
+    })
     $.ajax({
         url: "prdbsxt/update/ajax/get_connector_device_numbers/",
         method: "get",
@@ -115,8 +125,10 @@ function getConnectorDeviceNumbers() {
         success: function(result) {
             connectors_to_kick = result;
             showConnectors();
+            bootbox.hideAll();
         },
         error: function(jqXHR, textStatus, errorThrown) {
+            bootbox.hideAll();
             alert(textStatus+"\r\n"+message);
         }
     })
@@ -127,6 +139,10 @@ function initConnectorCloseAll() {
     for (var i=0;i<connectors_to_kick.length;i++) {
         connector_ids.push(connectors_to_kick[i].id);
     }
+    bootbox.dialog({
+        message: "Calling `closeAll` on all connectors ...",
+        closeButton: false
+    });
     $.ajax({
         url: "prdbsxt/update/ajax/init_connector_close_all/",
         method: "post",
@@ -136,8 +152,10 @@ function initConnectorCloseAll() {
         },
         success: function(result) {
             console.log(result);
+            bootbox.hideAll();
         },
         error: function(jqXHR, textStatus, errorThrown) {
+            bootbox.hideAll();
             alert(textStatus+"\r\n"+message);
         }
     })
