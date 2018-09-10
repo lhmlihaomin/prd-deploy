@@ -54,20 +54,26 @@ function showConnectors() {
 
 function deregisterFromAll() {
     var tip = "This will deregister all instances from all load balancers.\nContinue?";
-    if (!confirm(tip)) {
+    /*if (!confirm(tip)) {
         return false;
-    }
+    }*/
+    bootbox.confirm(tip, function(result) {
+        if (result) {deregisterConnectors();}
+    })
     //console.log("Deregister connectors from all ELBs ...");
-    deregisterConnectors();
+    
 }
 
 function callCloseAll() {
     var tip = "This will close all conns. Please confirm:";
-    if (!confirm(tip)) {
+    /*if (!confirm(tip)) {
         return false;
-    }
+    }*/
+    bootbox.confirm(tip, function(result) {
+        if (result) {initConnectorCloseAll();}
+    })
     //console.log("Calling closeAll on all hosts ...");
-    initConnectorCloseAll();
+    //initConnectorCloseAll();
 }
 
 function refreshDeviceNumbers() {
@@ -76,8 +82,6 @@ function refreshDeviceNumbers() {
 
 
 function deregisterConnectors() {
-    console.log(updateplan_id);
-    console.log(step_id);
     var connector_ids = [];
     for (var i=0;i<connectors_to_kick.length;i++) {
         connector_ids.push(connectors_to_kick[i].id);
