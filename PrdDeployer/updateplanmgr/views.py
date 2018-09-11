@@ -111,10 +111,25 @@ def updateplans(request):
 def updateplan(request, plan_id):
     plan = get_object_or_404(UpdatePlan, pk=plan_id)
     steps = plan.steps.order_by('sequence')
+
+    time_steps = list()
+    temp_datetime = None
+    for step in steps:
+        if temp_datetime is None or step.start_time != temp_datetime:
+            time_steps.append({
+                'start_time': step.start_time,
+                'steps': [step,]
+            })
+            temp_datetime = step.start_time
+        else:
+            time_steps[-1]['steps'].append(step)
+
+
     context = {
         'title': "UpdatePlan",
         'plan': plan,
         'steps': steps,
+        'time_steps': time_steps,
         'alarm_url': settings.OPENFALCON['alarm_url'],
     }
     return render(request, 'updateplanmgr/updateplan_ace.html', context)
@@ -595,6 +610,7 @@ def kick_devices(request, plan_id, step_id):
     """Closes client/device TCP connections for `connector` like modules"""
     def get_elb_instances(elb_names, module):
         """Get instance ids registered with this ELB"""
+        return list(['i-abcd1234', 'i-abcd2234', 'i-abcd3234'])
         s = module.profile.get_session(module.region)
         elb = s.client('elb')
         result = elb.describe_load_balancers(
@@ -630,7 +646,7 @@ def kick_devices(request, plan_id, step_id):
         if type(connector.device_num) is not int:
             continue
         total_device_num += connector.device_num
-        if total_device_num >= max_devs_per_hr:
+        if total_device_num > max_devs_per_hr:
             total_device_num -= connector.device_num
             break
         else:

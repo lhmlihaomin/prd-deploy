@@ -5,3 +5,13 @@ html,body{
 tr.deviceNotKick {
     color: lightgray;
 }
+
+tr.aps1 {
+    background-color: #ddffdd;
+}
+tr.euw1 {
+    background-color: #ffddff;
+}
+tr.use1 {
+    background-color: #ddeeff;
+}
