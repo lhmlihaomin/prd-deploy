@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block title %}UpdatePlan{% endblock %}
 {% block body %}
-<h5 class="header smaller" style="margin-top: 220px;">
+<h3 class="header smaller" style="margin-top: 320px;">
     {{plan.project_name}}
     <small>
         <i class="icon-double-angle-right"></i>
@@ -31,63 +31,65 @@
     </a>
 </p>
 
-<div id="accordion">
-{% for time_step in time_steps %}
-<h5>{{time_step.start_time|date:"Y-m-d H:i:s D"}}</h5>
-<div>
-<table class="table table-bordered table-hover">
+<table class="table table-striped table-bordered table-hover">
     <thead>
         <tr>
             <th>Step</th>
             <th>Region</th>
             <th>Module</th>
+            <!--<th>New Version</th>-->
             <th>New EC2</th>
             <th>Old Version</th>
             <th>Old EC2</th>
             <th>ELB</th>
+            <!--<th>ELB State</th>-->
             <th>ELB Actions</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-{% for step in time_step.steps %}
-<tr class="{{step.module.region.tag_name}}">
-    <td>{{step.sequence}}</td>
-    <td>{{step.module.region.full_name}}</td>
-    <td>{{step.module.display_name}}</td>
-    <td>
-        <button class="btn btn-xs no-border btn-primary" onclick="run_module_ec2({{step.id}})">Run</button>
-        <span>{{step.module.healthy_instance_count}}/{{step.module.instance_count}}</span>
-    </td>
-    <td>
-        <button class="btn btn-xs no-border btn-inverse" onclick="disable_module_alarm({{step.id}})">
-            <i class="icon-bell"></i>
-            Disable Alarm
-        </button>
-        {{step.module.previous_version}}
-    </td>
-    <td>
-        <button class="btn btn-xs no-border btn-danger" onclick="stop_module_previous_ec2({{step.id}})">Stop</button>
-        <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
-    </td>
-    <td>{{step.module.load_balancer_names}}</td>
-    <td>
-        {% if step.module.load_balancer_names %}
-        <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Reg. New</button>
-        <button class="btn btn-xs no-border btn-danger" onclick="dereg_module_elb({{step.id}})">Dereg. Old</button>
-        {% endif %}
-    </td>
-    <td>
-        <a style="font-size:1.5em" target="_blank" href="{% url 'updateplanmgr:edit_module' step.module.id %}" title="Edit Module"><i class="icon-edit"></i></a>
-        <a style="font-size:1.5em" target="_blank" href="./kickdevices/{{ step.id }}/" title="Kick Devices"><i class="icon-bolt"></i></a>
-    </td>
-</tr>
-{% endfor %}
+        {% for step in steps %}
+        <tr>
+            <td>{{step.sequence}}</td>
+            <td>{{step.module.region.full_name}}</td>
+            <td>{{step.module.display_name}}</td>
+            <!--<td>{{step.module.current_version}}</td>-->
+            <td>
+                <button class="btn btn-xs no-border btn-primary" onclick="run_module_ec2({{step.id}})">Run</button>
+                <span>{{step.module.healthy_instance_count}}/{{step.module.instance_count}}</span>
+            </td>
+            <td>
+                <button class="btn btn-xs no-border btn-inverse" onclick="disable_module_alarm({{step.id}})">
+                    <i class="icon-bell"></i>
+                    Disable Alarm
+                </button>
+                {{step.module.previous_version}}
+            </td>
+            <td>
+                <button class="btn btn-xs no-border btn-danger" onclick="stop_module_previous_ec2({{step.id}})">Stop</button>
+                <span>{{step.module.previous_module.healthy_instance_count}}/{{step.module.previous_module.instance_count}}</span>
+            </td>
+            <td>{{step.module.load_balancer_names}}</td>
+            <!--<td>
+                <span id="spanElbState"></span>
+                <button class="btn btn-xs no-border btn-info" onclick="check_module_elb_health({{step.id}})">Check</button>
+            </td>-->
+            <td>
+                {% if step.module.load_balancer_names %}
+                <button class="btn btn-xs no-border btn-primary" onclick="reg_module_elb({{step.id}})">Reg. New</button>
+                <button class="btn btn-xs no-border btn-danger" onclick="dereg_module_elb({{step.id}})">Dereg. Old</button>
+                {% endif %}
+            </td>
+            <td>
+                <!--<button class="btn btn-xs no-border btn-info" onclick="finish_step({{step.id}})">Mark</button>-->
+                <!--<a target="_blank" href="{% url 'updateplanmgr:edit_module_json' step.module.id %}">Edit JSON</a>-->
+                <a style="font-size:1.5em" target="_blank" href="{% url 'updateplanmgr:edit_module' step.module.id %}" title="Edit Module"><i class="icon-edit"></i></a>
+                <a style="font-size:1.5em" target="_blank" href="./kickdevices/{{ step.id }}/" title="Kick Devices"><i class="icon-bolt"></i></a>
+            </td>
+        </tr>
+        {% endfor %}
     </tbody>
 </table>
-</div>
-{% endfor %}
-</div>
 
 <div class="widget-box" style="position: fixed; top: 50px; width: 85%;">
     <div class="widget-header widget-header-flat widget-header-small">
@@ -95,7 +97,7 @@
     </div>
     <div class="widget-body">
         <div class="widget-main">
-            <div style="min-height:200px; height: 200px; overflow:auto;" id="divAjaxMessage"></div>
+            <div style="min-height:300px; height: 300px; overflow:auto;" id="divAjaxMessage"></div>
         </div>
     </div>
 </div>
@@ -353,9 +355,5 @@ $(document).on("keypress", 'form', function (e) {
         return false;
     }
 });
-
-$(document).ready(function(){
-    $("#accordion").accordion({collapsible: true});
-})
 </script>
 {% endblock %}
