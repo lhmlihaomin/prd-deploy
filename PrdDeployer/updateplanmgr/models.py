@@ -259,6 +259,16 @@ class UpdatePlan(models.Model):
     def __unicode__(self):
         return unicode(self.__str__())
 
+    def get_current_step(self):
+        """Find the first `unfinished` step"""
+        current_step = None
+        for step in self.steps.all():
+            if not step.finished:
+                current_step = step
+                break
+        return current_step
+
+
 
 class UpdateActionLog(models.Model):
     # Who:
