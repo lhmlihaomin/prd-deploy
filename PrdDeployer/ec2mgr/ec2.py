@@ -130,6 +130,24 @@ def add_instance_tags(ec2res, optionset, instance_ids):
     return ret
 
 
+def add_instance_tags_uni(ec2res, optionset, instance_ids):
+    """Only returns True when all instance tags been added."""
+    result = add_instance_tags(ec2res, optionset, instance_ids)
+    for instance_id in result:
+        if not result[instance_id]:
+            return False
+    return True
+
+
+def add_instance_tags_ex(ec2res, optionset, instance_ids):
+    """Raise exception if one or more tags failed."""
+    result = add_instance_tags(ec2res, optionset, instance_ids)
+    for instance_id in result:
+        if not result[instance_id]:
+            raise Exception("Failed to add instance tags.")
+    return result
+
+
 def add_volume_tags(ec2res, instance_ids):
     """Add volume tags with instance information"""
     ret = {}
@@ -157,6 +175,24 @@ def add_volume_tags(ec2res, instance_ids):
         except Exception as ex:
             ret.update({instance.id: False})
     return ret
+
+
+def add_volume_tags_uni(ec2res, instance_ids):
+    """Only returns True if all volume tags been added."""
+    result = add_volume_tags(ec2res, instance_ids)
+    for instance_id in result:
+        if not result[instance_id]:
+            return False
+    return True
+
+
+def add_volume_tags_ex(ec2res, instance_ids):
+    """Raise exception if one or more tags failed."""
+    result = add_volume_tags(ec2res, instance_ids)
+    for instance_id in result:
+        if not result[instance_id]:
+            raise Exception("Failed to add volume tags.")
+    return result
 
 
 def get_instances_for_ec2launchoptionset(ec2res, optionset):
