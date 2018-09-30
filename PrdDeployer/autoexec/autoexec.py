@@ -50,6 +50,7 @@ def wait(timeout, interval, action, *args, **kwargs):
     """Retry `action` until it returns True or time out."""
     start_time = time.time()
     while True:
+        print "Running action ..."
         result = action(*args, **kwargs)
         if result:
             print "Done."
@@ -62,6 +63,13 @@ def wait(timeout, interval, action, *args, **kwargs):
             else:
                 print "Timed out."
                 return False
+
+
+def all_instances_service_ok(instance_ids):
+    for ec2instance in EC2Instance.objects.filter(instance_id__in=instance_ids):
+        if ec2instance.service_status != 'ok':
+            return False
+    return True
 
 
 def deploy_new_version_aws(ec2, module):
@@ -111,9 +119,14 @@ def deploy_new_version_aws(ec2, module):
             ec2instance.save()
 
     # wait until service status is ok, or timeout:
+    result = wait(360, 30, all_instances_service_ok, instance_ids)
+    if not result:
+        # TODO: handle exception
+        raise Exception("Service failed to start")
+        pass
     
     # return list of started instances:
-
+    return ec2instances
 
 # read update plan and step info:
 try:
@@ -133,7 +146,7 @@ elb = session.client('elb')
 
 
 # deploy new versions:
-deploy_new_version_aws(ec2, module)
+result = deploy_new_version_aws(ec2, module)
 
 # register load balancers:
 
