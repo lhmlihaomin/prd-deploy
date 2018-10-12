@@ -16,7 +16,7 @@ sys.path.append(
 os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
-from updateplanmgr.models import UpdatePlan, UpdateStep, Module
+from updateplanmgr.models import UpdatePlan, UpdateStep, Module, UpdateActionLog
 from ec2mgr.models import EC2Instance
 from ec2mgr.ec2 import run_instances, add_instance_tags_ex, add_volume_tags_ex
 
@@ -74,6 +74,8 @@ def all_instances_service_ok(instance_ids):
 
 def deploy_new_version_aws(ec2, module):
     """Deploy new version on AWS EC2."""
+    print "Deploying new version instances ..."
+
     instance_ids = list()
     ec2instances = list()
 
@@ -96,6 +98,7 @@ def deploy_new_version_aws(ec2, module):
             vpc_id=instance.vpc_id
         )
         ec2instance.save()
+        ec2instances.append(ec2instance)
         module.instances.add(ec2instance)
         instance_ids.append(instance.id)
 
@@ -126,7 +129,118 @@ def deploy_new_version_aws(ec2, module):
         pass
     
     # return list of started instances:
+    print "Instances: {0}".format(instance_ids)
     return ec2instances
+
+
+def all_instances_in_service(elb, load_balancer_names, instances):
+    for load_balancer_name in load_balancer_names:
+        result = elb.describe_instance_health(
+            LoadBalancerName=load_balancer_name,
+            Instances=instances
+        )
+        for state in result['InstanceStates']:
+            if state['State'] != 'InService':
+                return False
+    return True
+
+
+def lbreg_new_version_aws(elb, module):
+    print "Registering instances with load balancers ..."
+
+    # parse load balancer names:
+    lb_names = list()
+    for i in module.load_balancer_names.split(','):
+        lb_name = i.strip()
+        if len(lb_name) > 0:
+            lb_names.append(lb_name)
+    # get ec2instance list:
+    Instances = map(
+        lambda x: {'InstanceId': x},
+        #[instance.instance_id for instance in module.instances.all()]
+        # edit: only register instances with services running:
+        [instance.instance_id for instance in module.instances.filter(service_status='ok')]
+    )
+    # register with each load balancer:
+    for LoadBalancerName in lb_names:
+        result = elb.register_instances_with_load_balancer(
+            LoadBalancerName=LoadBalancerName,
+            Instances=Instances
+        )
+        for i in Instances:
+            if i not in result['Instances']:
+                msg = "Register failed: {0} - {1}".format(LoadBalancerName, i['InstanceId'])
+                raise Exception(msg)
+    
+    # wait for new instances become "InService":
+    result = wait(300, 30, all_instances_in_service, elb, lb_names, Instances)
+    if not result:
+        # TODO: Log exception
+        return False
+        
+    print "Done."
+    return True
+
+
+def lbdereg_old_version_aws(elb, module):
+    print "Deregistering old instances from load balancers ..."
+
+    # parse load balancer names:
+    lb_names = list()
+    for i in module.load_balancer_names.split(','):
+        lb_name = i.strip()
+        if len(lb_name) > 0:
+            lb_names.append(lb_name)
+    # get ec2instance list:
+    Instances = map(
+        lambda x: {'InstanceId': x},
+        #[instance.instance_id for instance in module.instances.all()]
+        # edit: only register instances with services running:
+        [instance.instance_id for instance in module.instances.filter(service_status='ok')]
+    )
+    # register with each load balancer:
+    for LoadBalancerName in lb_names:
+        result = elb.deregister_instances_from_load_balancer(
+            LoadBalancerName=LoadBalancerName,
+            Instances=Instances
+        )
+        for i in Instances:
+            if i in result['Instances']:
+                msg = "Deregister failed: {0} - {1}".format(LoadBalancerName, i['InstanceId'])
+                raise Exception(msg)
+
+    print "Done."
+    return True
+
+
+def stop_old_version_aws(module):
+    print "Stopping old instances ..."
+
+    instances = module.instances.all()
+    ids = [str(instance.id) for instance in instances]
+    # script path:
+    stop_script = os.path.sep.join([
+        os.path.abspath(
+            os.path.sep.join([
+                os.path.dirname(
+                    os.path.abspath(__file__)
+                ),
+                '..'
+            ])
+        ),
+        'stop_ec2_instances.py'
+    ])
+    cmd = [
+        'python',
+        stop_script,
+    ]
+    cmd += ids
+    #subprocess.Popen(cmd)
+    print cmd
+
+    print "Done."
+    return True
+
 
 # read update plan and step info:
 try:
@@ -139,15 +253,34 @@ except:
 plan = UpdatePlan.objects.get(pk=plan_id)
 step = plan.get_current_step()
 module = step.module
+previous_module = module.previous_module
 session = module.profile.get_session(module.region)
 ec2 = session.resource('ec2')
 elb = session.client('elb')
 
 
+# deploy new version instances:
+'''result = deploy_new_version_aws(ec2, module)
+if not result:
+    # log exception and exit:
+    pass
 
-# deploy new versions:
-result = deploy_new_version_aws(ec2, module)
+# register new:
+result = lbreg_new_version_aws(elb, module)
+if not result:
+    # log exception and exit:
+    pass
 
-# register load balancers:
+# deregister old:
+result = lbdereg_old_version_aws(elb, previous_module)
+if not result:
+    # log exception and exit:
+    pass
 
-# deregister old versions:
+# stop old version instances:
+result = stop_old_version_aws(previous_module)
+if result:
+    step.ec2_finished = True
+    step.elb_finished = True
+    step.finished = True
+    step.save()'''
