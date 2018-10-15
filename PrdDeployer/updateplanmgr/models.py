@@ -296,6 +296,18 @@ class UpdateActionLog(models.Model):
         return unicode(self.__str__())
 
     @classmethod
+    def create_new_log(cls, user, source_ip, update_plan, update_step, action="", args="", result=""):
+        return cls(
+            user=user,
+            source_ip=source_ip,
+            update_plan=update_plan,
+            update_step=update_step,
+            action=action,
+            args=args,
+            result=result
+        )
+
+    @classmethod
     def create(cls, request, update_plan=None, update_step=None, action="", args="", result=""):
         return cls(
             user = request.user,

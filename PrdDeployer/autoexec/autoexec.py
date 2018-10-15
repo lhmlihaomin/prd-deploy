@@ -16,6 +16,7 @@ sys.path.append(
 os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
+from django.contrib.auth.models import User
 from updateplanmgr.models import UpdatePlan, UpdateStep, Module, UpdateActionLog
 from ec2mgr.models import EC2Instance
 from ec2mgr.ec2 import run_instances, add_instance_tags_ex, add_volume_tags_ex
@@ -258,29 +259,81 @@ session = module.profile.get_session(module.region)
 ec2 = session.resource('ec2')
 elb = session.client('elb')
 
+user = User.objects.get(username='System')
 
 # deploy new version instances:
-'''result = deploy_new_version_aws(ec2, module)
-if not result:
-    # log exception and exit:
-    pass
+actionlog = UpdateActionLog.create_new_log(
+    user=user,
+    source_ip='127.0.0.1',
+    update_plan=plan,
+    update_step=step,
+    action="deploy_new_version_aws"
+)
+try:
+    result = deploy_new_version_aws(ec2, module)
+except Exception as ex:
+    actionlog.set_result(False, ex.message)
+    actionlog.save()
+    sys.exit(1)
+actionlog.set_result(True, "")
+actionlog.save()
+
 
 # register new:
-result = lbreg_new_version_aws(elb, module)
-if not result:
-    # log exception and exit:
-    pass
+actionlog = UpdateActionLog.create_new_log(
+    user=user,
+    source_ip='127.0.0.1',
+    update_plan=plan,
+    update_step=step,
+    action="lbreg_new_version_aws"
+)
+try:
+    result = lbreg_new_version_aws(elb, module)
+except Exception as ex:
+    actionlog.set_result(False, ex.message)
+    actionlog.save()
+    sys.exit(1)
+actionlog.set_result(True, "")
+actionlog.save()
+
 
 # deregister old:
-result = lbdereg_old_version_aws(elb, previous_module)
-if not result:
-    # log exception and exit:
-    pass
+actionlog = UpdateActionLog.create_new_log(
+    user=user,
+    source_ip='127.0.0.1',
+    update_plan=plan,
+    update_step=step,
+    action='lbdereg_old_version_aws'
+)
+try:
+    result = lbdereg_old_version_aws(elb, previous_module)
+except Exception as ex:
+    actionlog.set_result(False, ex.message)
+    actionlog.save()
+    sys.exit(1)
+actionlog.set_result(True, "")
+actionlog.save()
+
 
 # stop old version instances:
-result = stop_old_version_aws(previous_module)
+actionlog = UpdateActionLog.create_new_log(
+    user=user,
+    source_ip='127.0.0.1',
+    update_plan=plan,
+    update_step=step,
+    action='stop_old_version_aws'
+)
+try:
+    result = stop_old_version_aws(previous_module)
+except Exception as ex:
+    actionlog.set_result(False, ex.message)
+    actionlog.save()
+    sys.exit(1)
+actionlog.set_result(True, "")
+actionlog.save()
+
 if result:
     step.ec2_finished = True
     step.elb_finished = True
     step.finished = True
-    step.save()'''
+    step.save()
