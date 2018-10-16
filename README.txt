@@ -11,4 +11,6 @@ done 9. Copy configuration from existing module;
 done 10. API server: return something meaningful;
 11. Resolve new instance displayed as "Terminated" issue;
 12. Add page to edit instance info manually;
+13. autoexec: disable alarm w/ zk;
+14. autoexec: run through different steps;
 
