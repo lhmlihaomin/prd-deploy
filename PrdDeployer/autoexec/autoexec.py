@@ -1,3 +1,14 @@
+#!/usr/bin/python
+# coding: utf8
+# Execute the first available step of the specified UpdatePlan.
+# Usage:
+#     python autoexec.py <updateplan_id>
+# TODO:
+#   1. create a lock when running;
+#   2. mark updateplan as finished when all steps are finished;
+#   3. rollback ability;
+
+
 import os
 import sys
 
@@ -17,10 +28,12 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'PrdDeployer.settings'
 django.setup()
 
 from django.contrib.auth.models import User
+from django.conf import settings
+
 from updateplanmgr.models import UpdatePlan, UpdateStep, Module, UpdateActionLog
 from ec2mgr.models import EC2Instance
 from ec2mgr.ec2 import run_instances, add_instance_tags_ex, add_volume_tags_ex
-
+from openfalcon import openfalcon_login, openfalcon_logout, openfalcon_disable
 
 def retry(retry_times, callback, wait=0, *args, **kwargs):
     """
@@ -64,6 +77,32 @@ def wait(timeout, interval, action, *args, **kwargs):
             else:
                 print "Timed out."
                 return False
+
+
+def disable_module_alarm(module):
+    instances = module.instances.all()
+    session = openfalcon_login(
+        settings.OPENFALCON['login_url'],
+        settings.OPENFALCON['username'],
+        settings.OPENFALCON['password'],
+        settings.OPENFALCON['cert_file'],
+        settings.OPENFALCON['cert_key'],
+        False
+    )
+
+    result = openfalcon_disable(
+        session,
+        settings.OPENFALCON['switch_url'],
+        instances
+    )
+    if not result:
+        raise Exception("Disable alarm failed.")
+
+    openfalcon_logout(
+        session,
+        settings.OPENFALCON['logout_url']
+    )
+    return True
 
 
 def all_instances_service_ok(instance_ids):
@@ -253,6 +292,10 @@ except:
 
 plan = UpdatePlan.objects.get(pk=plan_id)
 step = plan.get_current_step()
+if step is None:
+    print "Update plan has no available step. Nothing to do."
+    sys.exit(0)
+
 module = step.module
 previous_module = module.previous_module
 session = module.profile.get_session(module.region)
@@ -260,6 +303,11 @@ ec2 = session.resource('ec2')
 elb = session.client('elb')
 
 user = User.objects.get(username='System')
+
+
+# disable module alarms:
+disable_module_alarm(previous_module)
+
 
 # deploy new version instances:
 actionlog = UpdateActionLog.create_new_log(
@@ -337,3 +385,4 @@ if result:
     step.elb_finished = True
     step.finished = True
     step.save()
+
