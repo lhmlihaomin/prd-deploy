@@ -282,19 +282,31 @@ def stop_old_version_aws(module):
     return True
 
 
+def remove_pid_and_exit(pidfile="/tmp/autoexec.pid", code=0):
+    os.unlink(pidfile)
+    sys.exit(code)
+
+
+# write pid file:
+PIDFILE = "/tmp/autoexec.pid"
+with open(PIDFILE, 'w') as fp:
+    pid = os.getpid()
+    fp.write(str(pid))
+
+
 # read update plan and step info:
 try:
     plan_id = sys.argv[1]
     plan_id = int(plan_id)
 except:
     print "Usage: python autoexec.py <updateplan_id>"
-    exit()
+    remove_pid_and_exit()
 
 plan = UpdatePlan.objects.get(pk=plan_id)
 step = plan.get_current_step()
 if step is None:
     print "Update plan has no available step. Nothing to do."
-    sys.exit(0)
+    remove_pid_and_exit()
 
 module = step.module
 previous_module = module.previous_module
@@ -306,7 +318,7 @@ user = User.objects.get(username='System')
 
 
 # disable module alarms:
-disable_module_alarm(previous_module)
+# disable_module_alarm(previous_module)
 
 
 # deploy new version instances:
@@ -322,7 +334,7 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
-    sys.exit(1)
+    remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
 
@@ -340,7 +352,7 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
-    sys.exit(1)
+    remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
 
@@ -358,7 +370,7 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
-    sys.exit(1)
+    remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
 
@@ -376,7 +388,7 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
-    sys.exit(1)
+    remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
 
@@ -385,4 +397,12 @@ if result:
     step.elb_finished = True
     step.finished = True
     step.save()
+# if all steps are finished, mark UpdatePlan as finished:
+plan_finished = True
+for step in plan.steps.all():
+    plan_finished = plan_finished and step.finished
+if plan_finished:
+    plan.finished = True
+    plan.save()
 
+remove_pid_and_exit(code=0)
