@@ -185,7 +185,7 @@ def all_instances_in_service(elb, load_balancer_names, instances):
     return True
 
 
-def lbreg_new_version_aws(elb, module):
+def lbreg_module_aws(elb, module):
     print "Registering instances with load balancers ..."
 
     # parse load balancer names:
@@ -222,8 +222,8 @@ def lbreg_new_version_aws(elb, module):
     return True
 
 
-def lbdereg_old_version_aws(elb, module):
-    print "Deregistering old instances from load balancers ..."
+def lbdereg_module_aws(elb, module):
+    print "Deregistering instances from load balancers ..."
 
     # parse load balancer names:
     lb_names = list()
@@ -280,6 +280,10 @@ def stop_old_version_aws(module):
 
     print "Done."
     return True
+
+
+def rollback_module(module, ec2=None, elb=None):
+    pass    
 
 
 def remove_pid_and_exit(pidfile="/tmp/autoexec.pid", code=0):
@@ -345,10 +349,10 @@ actionlog = UpdateActionLog.create_new_log(
     source_ip='127.0.0.1',
     update_plan=plan,
     update_step=step,
-    action="lbreg_new_version_aws"
+    action="lbreg_module_aws"
 )
 try:
-    result = lbreg_new_version_aws(elb, module)
+    result = lbreg_module_aws(elb, module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
@@ -363,10 +367,10 @@ actionlog = UpdateActionLog.create_new_log(
     source_ip='127.0.0.1',
     update_plan=plan,
     update_step=step,
-    action='lbdereg_old_version_aws'
+    action='lbdereg_module_aws'
 )
 try:
-    result = lbdereg_old_version_aws(elb, previous_module)
+    result = lbdereg_module_aws(elb, previous_module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
