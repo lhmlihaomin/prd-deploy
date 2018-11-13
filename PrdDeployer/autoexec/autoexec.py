@@ -107,12 +107,13 @@ def disable_module_alarm(module):
 
 def all_instances_service_ok(instance_ids):
     for ec2instance in EC2Instance.objects.filter(instance_id__in=instance_ids):
+        print ec2instance.service_status
         if ec2instance.service_status != 'ok':
             return False
     return True
 
 
-def deploy_new_version_aws(ec2, module):
+def start_module_aws(ec2, module):
     """Deploy new version on AWS EC2."""
     print "Deploying new version instances ..."
 
@@ -253,7 +254,7 @@ def lbdereg_module_aws(elb, module):
     return True
 
 
-def stop_old_version_aws(module):
+def stop_module_aws(module):
     print "Stopping old instances ..."
 
     instances = module.instances.all()
@@ -282,8 +283,45 @@ def stop_old_version_aws(module):
     return True
 
 
-def rollback_module(module, ec2=None, elb=None):
-    pass    
+def poweron_module_aws(ec2client, module):
+    """Turn on stopped EC2 instances"""
+    InstanceIds = []    # EC2 Instance "ID"s;
+    instance_ids = []   # database table ids;
+    for instance in module.instances.all():
+        InstanceIds.append(instance.instance_id)
+        instance_ids.append(instance.id)
+    result = ec2client.start_instances(InstanceIds=InstanceIds)
+    for r in result['StartingInstances']:
+        if r['CurrentState']['Name'] == 'pending' or r['CurrentState']['Name'] == 'running':
+            instance = module.instances.get(instance_id=r['InstanceId'])
+            instance.running_state = 'pending'
+            instance.service_status = 'not_ready'
+            instance.save()
+    print "before wait."
+    print instance_ids
+    result = wait(360, 30, all_instances_service_ok, InstanceIds)
+    print "after wait."
+    print result
+    if not result:
+        # TODO: handle exception
+        raise Exception("Service failed to start")
+        pass
+    
+    # return list of started instances:
+    print "Instances: {0}".format(instance_ids)
+    return instance_ids
+    
+
+
+def rollback_module(module, ec2client, elbclient=None):
+    previous_module = module.previous_module
+
+    # Start (power on) old version instances:
+    poweron_module_aws(ec2client, previous_module)
+    # Register old version instances with LB:
+    # Deregister new version instances from LB:
+    # Stop new version instances:
+
 
 
 def remove_pid_and_exit(pidfile="/tmp/autoexec.pid", code=0):
@@ -315,8 +353,9 @@ if step is None:
 module = step.module
 previous_module = module.previous_module
 session = module.profile.get_session(module.region)
-ec2 = session.resource('ec2')
-elb = session.client('elb')
+ec2resource = session.resource('ec2')
+ec2client = session.client('ec2')
+elbclient = session.client('elb')
 
 user = User.objects.get(username='System')
 
@@ -331,10 +370,10 @@ actionlog = UpdateActionLog.create_new_log(
     source_ip='127.0.0.1',
     update_plan=plan,
     update_step=step,
-    action="deploy_new_version_aws"
+    action="start_module_aws"
 )
 try:
-    result = deploy_new_version_aws(ec2, module)
+    result = start_module_aws(ec2resource, module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
@@ -352,7 +391,7 @@ actionlog = UpdateActionLog.create_new_log(
     action="lbreg_module_aws"
 )
 try:
-    result = lbreg_module_aws(elb, module)
+    result = lbreg_module_aws(elbclient, module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
@@ -370,7 +409,7 @@ actionlog = UpdateActionLog.create_new_log(
     action='lbdereg_module_aws'
 )
 try:
-    result = lbdereg_module_aws(elb, previous_module)
+    result = lbdereg_module_aws(elbclient, previous_module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
@@ -385,10 +424,10 @@ actionlog = UpdateActionLog.create_new_log(
     source_ip='127.0.0.1',
     update_plan=plan,
     update_step=step,
-    action='stop_old_version_aws'
+    action='stop_module_aws'
 )
 try:
-    result = stop_old_version_aws(previous_module)
+    result = stop_module_aws(previous_module)
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
@@ -409,4 +448,8 @@ if plan_finished:
     plan.finished = True
     plan.save()
 
-remove_pid_and_exit(code=0)
+
+rollback_module(module, ec2resource, elbclient)
+# poweron_module_aws(ec2client, previous_module)
+
+# remove_pid_and_exit(code=0)
