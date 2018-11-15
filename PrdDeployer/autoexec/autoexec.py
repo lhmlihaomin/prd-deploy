@@ -319,9 +319,11 @@ def rollback_module(module, ec2client, elbclient=None):
     # Start (power on) old version instances:
     poweron_module_aws(ec2client, previous_module)
     # Register old version instances with LB:
+    lbreg_module_aws(elbclient, previous_module)
     # Deregister new version instances from LB:
+    lbdereg_module_aws(elbclient, module)
     # Stop new version instances:
-
+    stop_module_aws(module)
 
 
 def remove_pid_and_exit(pidfile="/tmp/autoexec.pid", code=0):
@@ -360,6 +362,8 @@ elbclient = session.client('elb')
 user = User.objects.get(username='System')
 
 
+# START UPDATE STEP PROCEDURE:
+'''
 # disable module alarms:
 # disable_module_alarm(previous_module)
 
@@ -448,8 +452,10 @@ if plan_finished:
     plan.finished = True
     plan.save()
 
+'''
+# UPDATE STEP PROCEDURE FINISH
 
-rollback_module(module, ec2resource, elbclient)
+rollback_module(module, ec2client, elbclient)
 # poweron_module_aws(ec2client, previous_module)
 
 # remove_pid_and_exit(code=0)
