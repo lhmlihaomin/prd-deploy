@@ -11,7 +11,7 @@
                     <th>Version</th>
                     <th>Num of Hosts</th>
                     <th>Load Balancers</th>
-                    <th>JSON</th>
+                    <th>Edit</th>
                     <th>Is Primary</th>
                     <th>Service Type</th>
                 </tr>
@@ -25,7 +25,6 @@
                     <td>{{module.instance_count}}</td>
                     <td>{{module.load_balancer_names}}</td>
                     <td>
-                        <a class="btn btn-xs btn-info no-border" href="{% url 'updateplanmgr:edit_module_json' module.id %}">Edit JSON</a>
                         <a class="btn btn-xs btn-info no-border" href="{% url 'updateplanmgr:edit_module' module.id %}">Edit</a>
                     </td>
                     <td>
