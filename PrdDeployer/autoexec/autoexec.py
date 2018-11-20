@@ -363,7 +363,7 @@ user = User.objects.get(username='System')
 
 
 # START UPDATE STEP PROCEDURE:
-'''
+
 # disable module alarms:
 # disable_module_alarm(previous_module)
 
@@ -452,10 +452,9 @@ if plan_finished:
     plan.finished = True
     plan.save()
 
-'''
 # UPDATE STEP PROCEDURE FINISH
 
-rollback_module(module, ec2client, elbclient)
+#rollback_module(module, ec2client, elbclient)
 # poweron_module_aws(ec2client, previous_module)
 
-# remove_pid_and_exit(code=0)
+remove_pid_and_exit(code=0)

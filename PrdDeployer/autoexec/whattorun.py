@@ -36,9 +36,14 @@ plan = UpdatePlan.objects.filter(finished=False)\
 if plan is None:
     exit()
 
+
+'''
+# user confirm:
 i = raw_input("Continue? ")
 if i != 'Y':
     exit()
+'''
+
 
 # check if autoexec is already running:
 if os.path.isfile(PIDFILE):
@@ -55,6 +60,6 @@ if os.path.isfile(PIDFILE):
 pass
 
 # start autoexec:
+print " ".join(['python', 'autoexec.py', str(plan.id)])
 p = subprocess.Popen(['python', 'autoexec.py', str(plan.id)])
 
-#print " ".join(['python', 'autoexec.py', str(plan.id)])
