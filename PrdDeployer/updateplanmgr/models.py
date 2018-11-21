@@ -252,6 +252,7 @@ class UpdatePlan(models.Model):
     steps = models.ManyToManyField(UpdateStep, related_name="update_plan")
     start_time = models.DateTimeField(default=timezone.now)
     finished = models.BooleanField(default=False)
+    error = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s: %s"%(self.project_code, self.project_name)

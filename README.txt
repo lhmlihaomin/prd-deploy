@@ -14,3 +14,4 @@ done 10. API server: return something meaningful;
 13. autoexec: disable alarm w/ zk;
 14. autoexec: run through different steps;
 15. autoexec: rollback;
+16. mark UpdatePlan as error when autoexec failed.
