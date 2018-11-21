@@ -60,6 +60,10 @@ if os.path.isfile(PIDFILE):
 pass
 
 # start autoexec:
-print " ".join(['python', 'autoexec.py', str(plan.id)])
-p = subprocess.Popen(['python', 'autoexec.py', str(plan.id)])
+autoexec_path = os.path.sep.join([
+    os.path.dirname(os.path.abspath(__file__)),
+    "autoexec.py"
+])
+#print " ".join(['python', autoexec_path, str(plan.id)])
+p = subprocess.Popen(['python', autoexec_path, str(plan.id)])
 
