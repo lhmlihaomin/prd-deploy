@@ -31,6 +31,7 @@ PIDCMD = "ps -f `cat {0}`|grep 'autoexec'|wc -l".format(PIDFILE)
 tz = pytz.timezone("Asia/Shanghai")
 plan = UpdatePlan.objects.filter(finished=False)\
                          .filter(start_time__lt=datetime.datetime.now(tz))\
+                         .filter(error=False)\
                          .first()
 
 if plan is None:

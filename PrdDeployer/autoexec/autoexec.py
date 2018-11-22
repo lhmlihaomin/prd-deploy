@@ -382,6 +382,8 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
+    plan.error = True
+    plan.save()
     remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
@@ -400,6 +402,8 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
+    plan.error = True
+    plan.save()
     remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
@@ -418,6 +422,8 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
+    plan.error = True
+    plan.save()
     remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
@@ -436,6 +442,8 @@ try:
 except Exception as ex:
     actionlog.set_result(False, ex.message)
     actionlog.save()
+    plan.error = True
+    plan.save()
     remove_pid_and_exit(code=1)
 actionlog.set_result(True, "")
 actionlog.save()
