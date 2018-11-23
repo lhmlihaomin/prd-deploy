@@ -39,5 +39,5 @@ urlpatterns = [
     # Redirect any other requests to home page:
     url(r'^prdbsxt/$', lambda r: HttpResponseRedirect('update/'), name="home"),
     url(r'^$', lambda r: HttpResponseRedirect('prdbsxt/update/'), name="home"),
-    url(r'^/$', lambda r: HttpResponseRedirect('prdbsxt/update/'), name="home"),
+    #url(r'^/$', lambda r: HttpResponseRedirect('prdbsxt/update/'), name="home"),
 ]
