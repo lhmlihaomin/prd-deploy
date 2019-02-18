@@ -55,9 +55,12 @@ class StopInstanceWorker(threading.Thread):
         """Package remaining logs and initiate upload."""
         log_script_path = "~"
         log_script = "logpackage.py"
+        new_log_script_path = "~/cloud-ops/log_transfer"
+        new_log_script = "log_service_shutdown.sh"
         # run command and wait for it to finish:
         #self.ssh.run(self.instance.stop_command)
         cmd = "cd %s&&python %s true"%(log_script_path, log_script)
+        new_cmd = "cd %s&&bash %s"%(new_log_script_path, new_log_script)
         print(cmd)
         try:
             exit_code, output, err = self.ssh.run(cmd)
@@ -65,7 +68,13 @@ class StopInstanceWorker(threading.Thread):
             if exit_code != 0:
                 return False
         except:
-            return False
+            try:
+                exit_code, output, err = self.ssh.run(new_cmd)
+                print(exit_code)
+                if exit_code != 0:
+                    return False
+            except:
+                return False
         # sleep (a magical) 10 seconds:
         #time.sleep(10)
         return True
