@@ -65,9 +65,9 @@ class StopInstanceWorker(threading.Thread):
         try:
             exit_code, output, err = self.ssh.run(cmd)
             print(exit_code)
-            if exit_code != 0:
-                return False
         except:
+            return False
+        if exit_code != 0:
             try:
                 exit_code, output, err = self.ssh.run(new_cmd)
                 print(exit_code)
