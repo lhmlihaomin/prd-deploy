@@ -21,7 +21,7 @@ from boto3helper.ec2 import get_instances_by_filters, \
 from boto3helper.tags import to_dict, get_name, get_resource_name
 from ec2mgr.ec2 import run_instances, add_instance_tags, add_volume_tags
 from ec2mgr.models import EC2Instance, Connector
-from openfalcon import openfalcon_login, openfalcon_logout, openfalcon_disable
+from openfalcon2 import openfalcon_login, openfalcon_logout, openfalcon_disable
 
 logger = logging.getLogger('common')
 
