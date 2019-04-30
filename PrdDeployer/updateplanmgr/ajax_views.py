@@ -213,6 +213,12 @@ def stop_module_ec2(request):
 @login_required
 def stop_module_previous_ec2(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    actionlog = UpdateActionLog.create(
+        request,
+        update_plan = step.update_plan.first(),
+        update_step = step,
+        action = "stop_module_previous_ec2"
+    )
     #if step.finished:
     #    return JSONResponse(False)
     module = step.module
@@ -237,7 +243,14 @@ def stop_module_previous_ec2(request):
         stop_script,
     ]
     cmd += ids
-    subprocess.Popen(cmd)
+    try:
+        subprocess.Popen(cmd)
+    except:
+        actionlog.set_result(False, json.dumps(ids))
+        actionlog.save()
+        return JSONResponse(False)    
+    actionlog.set_result(True, json.dumps(ids))
+    actionlog.save()
     return JSONResponse(True)
 
 

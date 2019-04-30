@@ -98,6 +98,8 @@ class StopInstanceWorker(threading.Thread):
     def run(self):
         self.connect_ssh()
         print("stopping service ...")
+        # mark instance as retired:
+        self.instance.retired = True
         result = self.stop_service()
         if not result:
             # write error

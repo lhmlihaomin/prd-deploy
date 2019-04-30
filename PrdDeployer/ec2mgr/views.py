@@ -61,6 +61,7 @@ def sync_instances_ex(request, profile_name, region_name):
 
     ret = []
     for module in Module.objects.filter(profile=profile,region=region):
+        print module.name+"-"+module.current_version
         instances = get_module_instances(ec2res, module.name, module.version)
         names = get_instance_names(instances)
         for instance in instances:
@@ -191,3 +192,34 @@ def instances(request):
         'module_instances': module_instances
     }
     return render(request, 'ec2mgr/instances.html', context=context)
+
+
+@login_required
+def retired_instances(request):
+    profiles = AWSProfile.objects.all()
+    regions = AWSRegion.objects.all()
+    if request.GET.has_key('profile_name'):
+        profile = get_object_or_404(AWSProfile, name=request.GET['profile_name'])
+    else:
+        profile = None
+    if request.GET.has_key('region_name'):
+        region = get_object_or_404(AWSRegion, name=request.GET['region_name'])
+    else:
+        region = None
+
+    instances = []
+    if not (profile is None or region is None):
+        # search for retired instances:
+        modules = Module.objects.filter(profile=profile, region=region)
+        for module in modules:
+            instances += module.instances.filter(running_state='stopped', retired=True)
+
+    context = {
+        'title': 'Retired Instances',
+        'profiles': profiles,
+        'regions': regions,
+        'instances': instances,
+        'profile': profile,
+        'region': region,
+    }
+    return render(request, 'ec2mgr/retired.html', context=context)

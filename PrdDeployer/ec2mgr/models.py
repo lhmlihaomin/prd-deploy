@@ -20,6 +20,7 @@ class EC2Instance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_checked_at = models.DateTimeField(blank=True, null=True)
     service_stopped_at = models.DateTimeField(blank=True, null=True)
+    retired = models.BooleanField(blank=False, default=False)
 
     vpc_id = models.CharField(max_length=500, default="")
 
