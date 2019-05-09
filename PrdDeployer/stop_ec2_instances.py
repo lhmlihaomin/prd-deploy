@@ -129,6 +129,7 @@ class StopInstanceWorker(threading.Thread):
             return False
         else:
             self.instance.running_state = "stopping"
+            self.instance.retired = True    # mark instance as retired
             self.instance.save()
         return True
 

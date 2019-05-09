@@ -30,7 +30,9 @@
         </form>
     
         <p>Retired instances for {{profile}} in {{region}}</p>
-    
+        
+        <form action="." method="POST">
+        {% csrf_token %}
         <table class="table table-striped table-bordered table-hover" id="tblRetiredInstances" class>
             <thead>
                 <tr>
@@ -43,7 +45,7 @@
             <tbody>
                 {% for instance in instances %}
                 <tr>
-                    <td><input id="iInstance_{{instance.id}}" type="checkbox" /></td>
+                    <td><input name="id[]" value="{{instance.id}}" id="iInstance_{{instance.id}}" type="checkbox" /></td>
                     <td><label for="iInstance_{{instance.id}}">{{instance.name}}</label></td>
                     <td>{{instance.instance_id}}</td>
                     <td>{{instance.running_state}}</td>
@@ -51,9 +53,10 @@
                 {% endfor %}
         </tbody>
         </table>
-        <dvi>
-            <button class="btn btn-xs btn-danger">Terminate Selected</button>
-        </dvi>
+        <div>
+            <button name="terminate" value="1" type="submit" class="btn btn-xs btn-danger">Terminate Selected</button>
+        </div>
+        </form>
 </div>
 <div class="col-sm-1"></div>
 </div>

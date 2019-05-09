@@ -198,6 +198,17 @@ def instances(request):
 def retired_instances(request):
     profiles = AWSProfile.objects.all()
     regions = AWSRegion.objects.all()
+
+    # handle POST request:
+    if request.POST.has_key('terminate'):
+        ids = request.POST.getlist('id[]')
+        instances = EC2Instance.objects.filter(pk__in=ids)
+        for instance in instances:
+            print "Terminating "+instance.name
+        # TODO: Terminate instances here.
+        return HttpResponse("POSTed")
+
+    # handle GET request:
     if request.GET.has_key('profile_name'):
         profile = get_object_or_404(AWSProfile, name=request.GET['profile_name'])
     else:
@@ -210,9 +221,7 @@ def retired_instances(request):
     instances = []
     if not (profile is None or region is None):
         # search for retired instances:
-        modules = Module.objects.filter(profile=profile, region=region)
-        for module in modules:
-            instances += module.instances.filter(running_state='stopped', retired=True)
+        instances = EC2Instance.objects.filter(retired=True).exclude(running_state='terminated')
 
     context = {
         'title': 'Retired Instances',
