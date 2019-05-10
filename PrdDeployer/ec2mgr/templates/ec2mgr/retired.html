@@ -37,6 +37,7 @@
             <thead>
                 <tr>
                     <th></th>
+                    <th>ID</th>
                     <th>Name</th>
                     <th>Instance ID</th>
                     <th>State</th>
@@ -46,6 +47,7 @@
                 {% for instance in instances %}
                 <tr>
                     <td><input name="id[]" value="{{instance.id}}" id="iInstance_{{instance.id}}" type="checkbox" /></td>
+                    <td>{{instance.id}}</td>
                     <td><label for="iInstance_{{instance.id}}">{{instance.name}}</label></td>
                     <td>{{instance.instance_id}}</td>
                     <td>{{instance.running_state}}</td>
@@ -69,7 +71,8 @@
 $('#tblRetiredInstances').dataTable({
     aoColumns: [
         {"sWidth": "3%"},
-        {"sWidth": "50%"},
+        {"sWidth": "5%"},
+        {"sWidth": "45%"},
         {"sWidth": "30%"},
         {"sWidth": "17%"},
     ]
