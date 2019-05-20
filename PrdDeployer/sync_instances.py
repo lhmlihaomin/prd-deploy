@@ -23,14 +23,14 @@ region = AWSRegion.objects.get(name=REGION_NAME)
 session = boto3.Session(profile_name=PROFILE_NAME, region_name=REGION_NAME)
 ec2resource = session.resource('ec2')
 
-print "Reading online instances ..."
+print("Reading online instances ...")
 instances_dict = {}
 for instance in ec2resource.instances.all():
     instances_dict.update({
         instance.id: instance
     })
 
-print "Reading local instances ..."
+print("Reading local instances ...")
 local_instances_dict = {}
 for instance in EC2Instance.objects.exclude(running_state='terminated'):
     local_instances_dict.update({
@@ -45,9 +45,9 @@ for local_instance_id in local_instances_dict.keys():
         if local_instance.running_state != instance.state['Name']:
             local_instance.running_state = instance.state['Name']
             local_instance.save()
-        print instance.state['Name']
+        print(instance.state['Name'])
     else:
-        print local_instance_id+" is no more."
+        print(local_instance_id+" is no more.")
         local_instance.running_state = 'terminated'
         local_instance.service_status = 'stopped'
         local_instance.retired = True
