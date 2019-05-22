@@ -221,7 +221,11 @@ def retired_instances(request):
     instances = []
     if not (profile is None or region is None):
         # search for retired instances:
-        instances = EC2Instance.objects.filter(retired=True).exclude(running_state='terminated')
+        retired_instances = EC2Instance.objects.filter(retired=True).exclude(running_state='terminated')
+        for i in retired_instances:
+            if i.modules.first().profile == profile:
+                if i.modules.first().region == region:
+                    instances.append(i)
 
     context = {
         'title': 'Retired Instances',
