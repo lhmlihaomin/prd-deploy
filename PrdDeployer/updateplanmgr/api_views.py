@@ -147,7 +147,7 @@ def new_updateplan(request):
                     name=update_step['module']
                 ).exists()
                 if not module_exists:
-                    print update_step.keys()
+                    print(update_step.keys())
                     # if no such module, create one:
                     if update_step.has_key('update_version'):
                         version = update_step['update_version']

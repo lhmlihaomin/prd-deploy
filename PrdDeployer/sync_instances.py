@@ -23,14 +23,14 @@ region = AWSRegion.objects.get(name=REGION_NAME)
 session = boto3.Session(profile_name=PROFILE_NAME, region_name=REGION_NAME)
 ec2resource = session.resource('ec2')
 
-print "Reading online instances ..."
+print("Reading online instances ...")
 instances_dict = {}
 for instance in ec2resource.instances.all():
     instances_dict.update({
         instance.id: instance
     })
 
-print "Reading local instances ..."
+print("Reading local instances ...")
 local_instances_dict = {}
 #for instance in EC2Instance.objects.exclude(running_state='terminated'):
 for module in Module.objects.filter(profile=profile, region=region):

@@ -61,7 +61,7 @@ def sync_instances_ex(request, profile_name, region_name):
 
     ret = []
     for module in Module.objects.filter(profile=profile,region=region):
-        print module.name+"-"+module.current_version
+        print(module.name+"-"+module.current_version)
         instances = get_module_instances(ec2res, module.name, module.version)
         names = get_instance_names(instances)
         for instance in instances:
@@ -125,17 +125,17 @@ def sync_vpc_ids(request):
             s = boto3.Session(profile_name=pid, region_name=rid)
             e = s.resource('ec2')
             #for instance in e.instances.filter(InstanceIds=instance_ids):
-                #print instance.vpc_id
+                #print(instance.vpc_id)
             for instance_id in instance_ids:
                 try:
                     instance = e.Instance(instance_id)
                     vpc_id = instance.vpc_id
-                    print vpc_id
+                    print(vpc_id)
                     ec2instance = EC2Instance.objects.get(instance_id=instance_id)
                     ec2instance.vpc_id = vpc_id
                     ec2instance.save()
                 except Exception as ex:
-                    print ex.message
+                    print(ex.message)
                     #raise ex
                     #print("%s:%s Instance %s does not exist."%(pid, rid, instance_id))
 
@@ -200,20 +200,20 @@ def retired_instances(request):
     regions = AWSRegion.objects.all()
 
     # handle POST request:
-    if request.POST.has_key('terminate'):
+    if 'terminate' in request.POST:
         ids = request.POST.getlist('id[]')
         instances = EC2Instance.objects.filter(pk__in=ids)
         for instance in instances:
-            print "Terminating "+instance.name
+            print("Terminating "+instance.name)
         # TODO: Terminate instances here.
         return HttpResponse("POSTed")
 
     # handle GET request:
-    if request.GET.has_key('profile_name'):
+    if 'profile_name' in request.GET:
         profile = get_object_or_404(AWSProfile, name=request.GET['profile_name'])
     else:
         profile = None
-    if request.GET.has_key('region_name'):
+    if 'region_name' in request.GET:
         region = get_object_or_404(AWSRegion, name=request.GET['region_name'])
     else:
         region = None

@@ -556,10 +556,10 @@ def edit_module(request, module_id):
             if instance_count != module.instance_count:
                 module.instance_count = instance_count
         if request.POST.get('load_balancer_names'):
-            print request.POST.get('load_balancer_names')
+            print(request.POST.get('load_balancer_names'))
             load_balancer_names = request.POST.get('load_balancer_names')
             if load_balancer_names != module.load_balancer_names:
-                print "editing load balancer names..."
+                print("editing load balancer names...")
                 module.load_balancer_names = load_balancer_names
         if request.POST.get('service_type'):
             service_type = request.POST.get('service_type')
@@ -575,7 +575,7 @@ def edit_module(request, module_id):
 
         # Save module
         if not errors:
-            print "Saving module ..."
+            print("Saving module ...")
             module.save()
             return HttpResponseRedirect(
                 reverse(
@@ -587,7 +587,7 @@ def edit_module(request, module_id):
                 )
             )
         else:
-            print errors
+            print(errors)
             module.refresh_from_db()
 
         context = {
