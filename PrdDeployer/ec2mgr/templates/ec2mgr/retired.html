@@ -1,4 +1,5 @@
 {% extends 'layout.html' %}
+{% load staticfiles %}
 {% block body %}
 <div class="row">
 <div class="col-sm-1"></div>
@@ -28,9 +29,9 @@
                 </tr>
             </table>
         </form>
-    
+
         <p>Retired instances for {{profile}} in {{region}}</p>
-        
+
         <form action="." method="POST">
         {% csrf_token %}
         <table class="table table-striped table-bordered table-hover" id="tblRetiredInstances" class>
@@ -60,19 +61,21 @@
 </div>
 <div class="col-sm-1"></div>
 </div>
-    
+
 {% endblock %}
 
 {% block page_js %}
-<script src="/prdbsxt/static/js/datatables.min.js"></script>
+<!--<script src="/prdbsxt/static/js/datatables.min.js"></script>-->
+<script src="{% static 'js/datatables.min.js' %}"></script>
 <script>
-$('#tblRetiredInstances').dataTable({
+$('#tblRetiredInstances').DataTable({
     aoColumns: [
         {"sWidth": "3%"},
         {"sWidth": "50%"},
         {"sWidth": "30%"},
         {"sWidth": "17%"},
-    ]
+    ],
+    select: true
 })
 </script>
 {% endblock %}

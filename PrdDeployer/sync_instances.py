@@ -16,8 +16,8 @@ from awscredentialmgr.models import AWSProfile, AWSRegion
 from ec2mgr.models import EC2Instance
 from updateplanmgr.models import Module
 
-PROFILE_NAME = 'cn-prd'
-REGION_NAME = 'cn-north-1'
+PROFILE_NAME = 'global-prd'
+REGION_NAME = 'us-east-1'
 profile = AWSProfile.objects.get(name=PROFILE_NAME)
 region = AWSRegion.objects.get(name=REGION_NAME)
 session = boto3.Session(profile_name=PROFILE_NAME, region_name=REGION_NAME)
@@ -32,10 +32,12 @@ for instance in ec2resource.instances.all():
 
 print "Reading local instances ..."
 local_instances_dict = {}
-for instance in EC2Instance.objects.exclude(running_state='terminated'):
-    local_instances_dict.update({
-        instance.instance_id: instance
-    })
+#for instance in EC2Instance.objects.exclude(running_state='terminated'):
+for module in Module.objects.filter(profile=profile, region=region):
+    for instance in module.instances.all():
+        local_instances_dict.update({
+            instance.instance_id: instance
+        })
 
 for local_instance_id in local_instances_dict.keys():
     local_instance = local_instances_dict[local_instance_id]
@@ -44,10 +46,12 @@ for local_instance_id in local_instances_dict.keys():
         instance = instances_dict[local_instance_id]
         if local_instance.running_state != instance.state['Name']:
             local_instance.running_state = instance.state['Name']
-            local_instance.save()
-        print instance.state['Name']
+        if instance.state['Name'] == 'running':
+            local_instance.retired = False
+        local_instance.save()
+        #print instance.state['Name']
     else:
-        print local_instance_id+" is no more."
+        #print local_instance_id+" is no more."
         local_instance.running_state = 'terminated'
         local_instance.service_status = 'stopped'
         local_instance.retired = True
