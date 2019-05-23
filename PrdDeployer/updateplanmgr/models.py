@@ -207,6 +207,9 @@ class UpdateStep(models.Model):
     ec2_finished = models.BooleanField(default=False)
     elb_finished = models.BooleanField(default=False)
 
+    ec2_launched = models.BooleanField(default=False)
+    elb_registered = models.BooleanField(default=False)
+
     def __str__(self):
         return "%d: %s"%(self.sequence, self.module.__str__())
 

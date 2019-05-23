@@ -85,6 +85,11 @@ def run_module_ec2(request):
         return HttpResponse(ex.message, status=500)
     actionlog.set_result(True, instance_ids)
     actionlog.save()
+    # if module has no load balancers, set ELB flags in advance:
+    if len(module.load_balancer_names) == 0:
+        step.elb_registered = True
+        step.elb_finished = True
+        step.save()
     return JSONResponse(instance_ids)
 
 
@@ -219,8 +224,16 @@ def stop_module_previous_ec2(request):
         update_step = step,
         action = "stop_module_previous_ec2"
     )
-    #if step.finished:
-    #    return JSONResponse(False)
+
+    # data check:
+    if not step.ec2_launched:
+        return JSONResponse((False, "New version not launched, cannot stop old version."))
+    if not step.elb_registered:
+        return JSONResponse((False, "New version instances not registered with ELBs, cannot stop old version."))
+    if not step.elb_finished:
+        return JSONResponse((False, "Old version instances not deregistered from ELBs, cannot stop."))
+    if step.finished:
+        return JSONResponse(False)
     module = step.module
     module = module.previous_module
     instances = module.instances.all()
@@ -263,11 +276,23 @@ def reg_module_elb(request):
         update_step = step,
         action = "reg_module_elb"
     )
+    module = step.module
+
+    # action check:
+    ## previous action not finished:
+    if module.healthy_instance_count < module.instance_count:
+        actionlog.set_result(False, "Instances not ready. Cannot register.")
+        actionlog.save()
+        return JSONResponse(False)
+    else:
+        step.ec2_launched = True
+        step.save()
+    ## action already finished:
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
         return JSONResponse(False)
-    module = step.module
+    
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
     elbclient = session.client('elb')
@@ -291,6 +316,8 @@ def reg_module_elb(request):
         except Exception as ex:
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
+    step.elb_registered = True
+    step.save()
     actionlog.set_result(True, ret)
     actionlog.save()
     return JSONResponse(ret)
@@ -305,6 +332,11 @@ def dereg_module_elb(request):
         update_step = step,
         action = "dereg_module_elb"
     )
+    # data check:
+    if not step.elb_registered:
+        actionlog.set_result(False, "New instances not registered with ELBs, cannot deregister.")
+        actionlog.save()
+        return JSONResponse(False)
     if step.finished:
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
@@ -329,6 +361,9 @@ def dereg_module_elb(request):
         except Exception as ex:
             logger.error(ex.message)
             ret.update({LoadBalancerName: False})
+    # set ELB flags:
+    step.elb_finished = True
+    step.save()
     actionlog.set_result(True, ret)
     actionlog.save()
     return JSONResponse(ret)
