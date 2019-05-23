@@ -51,12 +51,12 @@ if os.path.isfile(PIDFILE):
     p = subprocess.Popen([PIDCMD,], shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     if len(stderr) > 0:
-        print "Failed to check autoexec process. Command line: "+PIDCMD
+        print("Failed to check autoexec process. Command line: "+PIDCMD)
         sys.exit()
     if int(stdout) != 1:
-        print "Failed to check autoexec process. Please make sure autoexec terminated normally."
+        print("Failed to check autoexec process. Please make sure autoexec terminated normally.")
         sys.exit()
-    print "Autoexec is already running."
+    print("Autoexec is already running.")
     sys.exit()
 pass
 
@@ -65,6 +65,6 @@ autoexec_path = os.path.sep.join([
     os.path.dirname(os.path.abspath(__file__)),
     "autoexec.py"
 ])
-#print " ".join(['python', autoexec_path, str(plan.id)])
+#print(" ".join(['python', autoexec_path, str(plan.id)]))
 p = subprocess.Popen(['python', autoexec_path, str(plan.id)])
 

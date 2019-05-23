@@ -106,7 +106,7 @@ def main():
 
     module = Module.objects.get(name='mod1', current_version='1.2.1')
     for ec2instance in module.instances.all():
-        print ec2instance.instance_id
+        print(ec2instance.instance_id)
         env.host_string = "%s@%s"%(ec2instance.username, ec2instance.private_ip_address)
         env.key_filename = KEY_FILEPATH + ec2instance.key_pair + ".pem"
         host_result = {}

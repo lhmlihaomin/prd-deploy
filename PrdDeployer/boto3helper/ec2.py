@@ -11,7 +11,7 @@ Copyright: whatever fucks.
 """
 import re
 
-from tags import get_resource_name
+from .tags import get_resource_name
 
 
 def version_cmp(ver1, ver2):

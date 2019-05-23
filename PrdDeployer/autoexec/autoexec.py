@@ -65,18 +65,18 @@ def wait(timeout, interval, action, *args, **kwargs):
     """Retry `action` until it returns True or time out."""
     start_time = time.time()
     while True:
-        print "Running action ..."
+        print("Running action ...")
         result = action(*args, **kwargs)
         if result:
-            print "Done."
+            print("Done.")
             return True
         else:
             now = time.time()
             if now - start_time < timeout:
-                print "Sleep {0} and try again ...".format(interval)
+                print("Sleep {0} and try again ...".format(interval))
                 time.sleep(interval)
             else:
-                print "Timed out."
+                print("Timed out.")
                 return False
 
 
@@ -108,7 +108,7 @@ def disable_module_alarm(module):
 
 def all_instances_service_ok(instance_ids):
     for ec2instance in EC2Instance.objects.filter(instance_id__in=instance_ids):
-        print ec2instance.service_status
+        print(ec2instance.service_status)
         if ec2instance.service_status != 'ok':
             return False
     return True
@@ -116,7 +116,7 @@ def all_instances_service_ok(instance_ids):
 
 def start_module_aws(ec2, module):
     """Deploy new version on AWS EC2."""
-    print "Deploying new version instances ..."
+    print("Deploying new version instances ...")
 
     instance_ids = list()
     ec2instances = list()
@@ -149,10 +149,10 @@ def start_module_aws(ec2, module):
     for instance_id in result:
         if result[instance_id]:
             ec2instance = EC2Instance.objects.get(instance_id=instance_id)
-            print ec2instance.id
+            print(ec2instance.id)
             ec2instance.instance_tags_added = True
             ec2instance.name = result[instance_id]
-            print ec2instance.name
+            print(ec2instance.name)
             ec2instance.save()
 
     # add tags to EBS volumes:
@@ -171,7 +171,7 @@ def start_module_aws(ec2, module):
         pass
     
     # return list of started instances:
-    print "Instances: {0}".format(instance_ids)
+    print("Instances: {0}".format(instance_ids))
     return ec2instances
 
 
@@ -188,7 +188,7 @@ def all_instances_in_service(elb, load_balancer_names, instances):
 
 
 def lbreg_module_aws(elb, module):
-    print "Registering instances with load balancers ..."
+    print("Registering instances with load balancers ...")
 
     # parse load balancer names:
     lb_names = list()
@@ -220,12 +220,12 @@ def lbreg_module_aws(elb, module):
         # TODO: Log exception
         return False
         
-    print "Done."
+    print("Done.")
     return True
 
 
 def lbdereg_module_aws(elb, module):
-    print "Deregistering instances from load balancers ..."
+    print("Deregistering instances from load balancers ...")
 
     # parse load balancer names:
     lb_names = list()
@@ -251,12 +251,12 @@ def lbdereg_module_aws(elb, module):
                 msg = "Deregister failed: {0} - {1}".format(LoadBalancerName, i['InstanceId'])
                 raise Exception(msg)
 
-    print "Done."
+    print("Done.")
     return True
 
 
 def stop_module_aws(module):
-    print "Stopping old instances ..."
+    print("Stopping old instances ...")
 
     instances = module.instances.all()
     ids = [str(instance.id) for instance in instances]
@@ -278,9 +278,9 @@ def stop_module_aws(module):
     ]
     cmd += ids
     #subprocess.Popen(cmd)
-    print cmd
+    print(cmd)
 
-    print "Done."
+    print("Done.")
     return True
 
 
@@ -298,18 +298,18 @@ def poweron_module_aws(ec2client, module):
             instance.running_state = 'pending'
             instance.service_status = 'not_ready'
             instance.save()
-    print "before wait."
-    print instance_ids
+    print("before wait.")
+    print(instance_ids)
     result = wait(360, 30, all_instances_service_ok, InstanceIds)
-    print "after wait."
-    print result
+    print("after wait.")
+    print(result)
     if not result:
         # TODO: handle exception
         raise Exception("Service failed to start")
         pass
     
     # return list of started instances:
-    print "Instances: {0}".format(instance_ids)
+    print("Instances: {0}".format(instance_ids))
     return instance_ids
     
 
@@ -344,13 +344,13 @@ try:
     plan_id = sys.argv[1]
     plan_id = int(plan_id)
 except:
-    print "Usage: python autoexec.py <updateplan_id>"
+    print("Usage: python autoexec.py <updateplan_id>")
     remove_pid_and_exit()
 
 plan = UpdatePlan.objects.get(pk=plan_id)
 step = plan.get_current_step()
 if step is None:
-    print "Update plan has no available step. Nothing to do."
+    print("Update plan has no available step. Nothing to do.")
     remove_pid_and_exit()
 
 module = step.module
