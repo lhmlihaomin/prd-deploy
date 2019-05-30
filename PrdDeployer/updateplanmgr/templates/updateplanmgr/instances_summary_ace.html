@@ -37,7 +37,7 @@
                     <td>{{ instance.instance_id }}</td>
                     <td>{{ instance.private_ip_address }}</td>
                     <td>{{ instance.running_state }}</td>
-                    <td>{{ instance.service_status }}</td>
+                    <td style="cursor: pointer;" title="{{ instance.note }}">{{ instance.service_status }}</td>
                 {% endfor %}
             </tbody>
         </table>
@@ -63,7 +63,7 @@
                     <td>{{ instance.instance_id }}</td>
                     <td>{{ instance.private_ip_address }}</td>
                     <td>{{ instance.running_state }}</td>
-                    <td>{{ instance.service_status }}</td>
+                    <td style="cursor: pointer;" title="{{ instance.note }}">{{ instance.service_status }}</td>
                 {% endfor %}
             </tbody>
         </table>
