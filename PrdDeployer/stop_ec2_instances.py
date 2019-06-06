@@ -147,16 +147,17 @@ def main():
     # read instance and module information:
     ec2_instances = EC2Instance.objects.filter(pk__in=ec2_instance_ids)
     #ec2_instances = EC2Instance.objects.all()
+    # start workers:
+    workers = list()
     for ec2_instance in ec2_instances:
         print("===== %s ====="%(ec2_instance.name))
         worker = StopInstanceWorker(ec2_instance, '/home/ubuntu/pem/')
+        workers.append(worker)
         worker.start()
         print("-------------------------------------")
-    # init StopInstanceWorkers:
-    # start workers:
     # wait for workers to join:
-    # update instance status based on result:
-    pass
+    for worker in workers:
+        worker.join()
 
 
 if __name__ == "__main__":

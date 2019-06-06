@@ -209,11 +209,17 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'file': {
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(BASE_DIR), "logs", "updatemanager.log")
         }
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'propagate': True,
         },
         'django.request': {
@@ -222,7 +228,7 @@ LOGGING = {
             'propagate': False,
         },
         'common': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'level': 'INFO',
         }
     }

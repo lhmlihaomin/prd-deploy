@@ -38,7 +38,6 @@ def index(request):
 def modules(request, profile_name, region_name):
     profile = get_object_or_404(AWSProfile, name=profile_name)
     region = get_object_or_404(AWSRegion, name=region_name)
-    logger.info("I'm entering!")
 
     modules = Module.objects.filter(profile=profile, region=region)\
         .order_by("name", "-current_version")
