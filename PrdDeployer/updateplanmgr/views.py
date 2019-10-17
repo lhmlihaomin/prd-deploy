@@ -38,7 +38,6 @@ def index(request):
 def modules(request, profile_name, region_name):
     profile = get_object_or_404(AWSProfile, name=profile_name)
     region = get_object_or_404(AWSRegion, name=region_name)
-    logger.info("I'm entering!")
 
     modules = Module.objects.filter(profile=profile, region=region)\
         .order_by("name", "-current_version")
@@ -137,12 +136,12 @@ def updateplan(request, plan_id):
 
 def get_module_image(profile, region, module_name, version):
     """Get module AMI by module name and version"""
-    image = AWSResource.objects.get(
+    image = AWSResource.objects.filter(
         profile=profile,
         region=region,
         resource_type="image",
         name__contains="-%s-%s-"%(module_name, version)
-    )
+    ).order_by('-name').first()
     return image
 
 
@@ -150,9 +149,8 @@ def make_new_module(profile, region, module_name, version, \
     instance_count, configuration, service_type, load_balancer_names):
     """Create a brand new module"""
     # Check for AMI image:
-    try:
-        new_image = get_module_image(profile, region, module_name, version)
-    except:
+    new_image = get_module_image(profile, region, module_name, version)
+    if new_image is None:
         raise Exception("ImageNotFound: %s:%s, %s-%s"%(profile.name, region.name, module_name, version))
     # check for old module:
     query_set = Module.objects.filter(

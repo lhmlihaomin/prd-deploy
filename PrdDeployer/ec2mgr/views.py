@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 import boto3
+from botocore.exceptions import ClientError
 
 from awscredentialmgr.models import AWSProfile, AWSRegion
 from updateplanmgr.models import Module
@@ -204,7 +205,14 @@ def retired_instances(request):
         ids = request.POST.getlist('id[]')
         instances = EC2Instance.objects.filter(pk__in=ids)
         for instance in instances:
-            print("Terminating "+instance.name)
+            module = instance.modules.first()
+            session = module.profile.get_session(module.region)
+            client = session.client('ec2')
+            print "Terminating "+instance.name
+            try:
+                result = client.terminate_instances(InstanceIds=[instance.instance_id], DryRun=True)
+            except ClientError as ex:
+                print ex.message
         # TODO: Terminate instances here.
         return HttpResponse("POSTed")
 

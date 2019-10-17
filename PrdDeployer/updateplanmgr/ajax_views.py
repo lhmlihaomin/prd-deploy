@@ -240,6 +240,7 @@ def stop_module_previous_ec2(request):
         return JSONResponse((False, "Old version instances not deregistered from ELBs, cannot stop."))
     if step.finished:
         return JSONResponse(False)
+
     instances = module.instances.all()
     # EC2Instance database ids:
     ids = [str(instance.id) for instance in instances]
