@@ -56,6 +56,12 @@ def run_instances(ec2res, optionset, count):
             SecurityGroupIds=security_group_ids,
             # TODO: handle insufficient IP address error:
             SubnetId=opset['subnets'][0][1],
+            CapacityReservationSpecification={
+                'CapacityReservationPreference': 'open',
+                #'CapacityReservationTarget': {
+                #    'CapacityReservationId': 'cr-reservid'
+                #}
+            }
         )
         return instances
         #instance_ids = [x.id for x in instances]

@@ -218,6 +218,8 @@ def stop_module_ec2(request):
 @login_required
 def stop_module_previous_ec2(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    current_module = step.module
+    module = current_module.previous_module
     actionlog = UpdateActionLog.create(
         request,
         update_plan = step.update_plan.first(),
@@ -226,6 +228,10 @@ def stop_module_previous_ec2(request):
     )
 
     # data check:
+    if current_module.healthy_instance_count >= current_module.instance_count:
+        step.ec2_launched = True
+        step.save()
+
     if not step.ec2_launched:
         return JSONResponse((False, "New version not launched, cannot stop old version."))
     if not step.elb_registered:
@@ -234,8 +240,6 @@ def stop_module_previous_ec2(request):
         return JSONResponse((False, "Old version instances not deregistered from ELBs, cannot stop."))
     if step.finished:
         return JSONResponse(False)
-    module = step.module
-    module = module.previous_module
     instances = module.instances.all()
     # EC2Instance database ids:
     ids = [str(instance.id) for instance in instances]
