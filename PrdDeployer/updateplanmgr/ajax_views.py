@@ -218,6 +218,8 @@ def stop_module_ec2(request):
 @login_required
 def stop_module_previous_ec2(request):
     step = get_object_or_404(UpdateStep, pk=request.POST.get('step_id'))
+    current_module = step.module
+    module = current_module.previous_module
     actionlog = UpdateActionLog.create(
         request,
         update_plan = step.update_plan.first(),
@@ -228,8 +230,9 @@ def stop_module_previous_ec2(request):
     module = module.previous_module
 
     # data check:
-    if module.healthy_instance_count >= module.instance_count:
+    if current_module.healthy_instance_count >= current_module.instance_count:
         step.ec2_launched = True
+        step.save()
 
     if not step.ec2_launched:
         return JSONResponse((False, "New version not launched, cannot stop old version."))
@@ -239,6 +242,7 @@ def stop_module_previous_ec2(request):
         return JSONResponse((False, "Old version instances not deregistered from ELBs, cannot stop."))
     if step.finished:
         return JSONResponse(False)
+
     instances = module.instances.all()
     # EC2Instance database ids:
     ids = [str(instance.id) for instance in instances]
@@ -355,6 +359,7 @@ def dereg_module_elb(request):
     )
     ret = {}
     for LoadBalancerName in module.load_balancer_names.split(','):
+        LoadBalancerName = LoadBalancerName.strip()
         try:
             elbclient.deregister_instances_from_load_balancer(
                 LoadBalancerName=LoadBalancerName,

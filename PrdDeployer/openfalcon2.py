@@ -18,6 +18,7 @@ def get_openfalcon_host_name(instance_name, private_ip_address):
         'cn': 'cn',
         'cn1': 'cn',
         'cnn1': 'cn',
+        'cnnw1': 'cn',
     }
     #    env           module          version          region        az           number
     p = r"([adefmprtuv]+)-([a-zA-Z0-9_]+)-([\d\._a-zA-Z]+)-([a-zA-Z\d]+)-([\da-zA-Z])-(\d+)"

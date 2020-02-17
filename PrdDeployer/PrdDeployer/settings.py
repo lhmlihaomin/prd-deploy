@@ -1,3 +1,4 @@
+# coding:utf8
 """
 Django settings for PrdDeployer project.
 """
@@ -42,7 +43,7 @@ DATABASES = {
         # Not used with sqlite3.
         'USER': 'prd_deployer',
         # Not used with sqlite3.
-        'PASSWORD': 'tplinkcloud',
+        'PASSWORD': '',
         # Set to empty string for localhost. Not used with sqlite3.
         'HOST': '',
         # Set to empty string for default. Not used with sqlite3.
@@ -174,6 +175,7 @@ INSTALLED_APPS = (
     'ec2mgr',
     'elbmgr',
     'schtasks',
+    'BasicServiceUpdater',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -209,11 +211,17 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'file': {
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(BASE_DIR), "logs", "updatemanager.log")
         }
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'propagate': True,
         },
         'django.request': {
@@ -222,7 +230,7 @@ LOGGING = {
             'propagate': False,
         },
         'common': {
-            'handlers': ['console'],
+            'handlers': ['file'],
             'level': 'INFO',
         }
     }
@@ -251,3 +259,23 @@ OPENFALCON = {
 
 LOGIN_URL = "/prdbsxt/accounts/login/"
 LOGOUT_URL = "/prdbsxt/accounts/logout/"
+
+HOME_PATH = '/home/ubuntu'
+
+DEVOPS_DIR = os.path.join(HOME_PATH, 'cloud-ops')
+
+DEPLOY_BUCKET_NAME = ''
+
+DEFAULT_PEM_PATH = os.path.join(HOME_PATH, "")
+
+# diff mail conf
+EMAIL_BACKEND = 'django_ses.SESBackend'
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+AWS_SES_AUTO_THROTTLE = None
+SERVER_EMAIL = ''
+MAIL_DOMAIN = ''
+MAIL_SUBJECT_PREFIX = u'【Prd更新】'
+MAIL_TEMPLATE_DIR = 'static/mail-template'
+
+DEFAULT_MYSQL_ADDR = 'localhost'
