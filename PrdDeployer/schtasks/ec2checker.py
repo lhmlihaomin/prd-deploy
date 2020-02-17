@@ -259,7 +259,7 @@ class EC2Checker(object):
                 exit_code, output, err = ssh.run(cmds[i])
                 print("||%s: %s"%(checks[i], output))
                 results.update({
-                    checks[i]: int(output) == 1
+                    checks[i]: int(output) >= 1
                 })
             except Exception as ex:
                 results.update({

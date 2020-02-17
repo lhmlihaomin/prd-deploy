@@ -357,6 +357,7 @@ def dereg_module_elb(request):
     )
     ret = {}
     for LoadBalancerName in module.load_balancer_names.split(','):
+        LoadBalancerName = LoadBalancerName.strip()
         try:
             elbclient.deregister_instances_from_load_balancer(
                 LoadBalancerName=LoadBalancerName,
