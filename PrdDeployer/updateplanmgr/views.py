@@ -137,12 +137,12 @@ def updateplan(request, plan_id):
 
 def get_module_image(profile, region, module_name, version):
     """Get module AMI by module name and version"""
-    image = AWSResource.objects.get(
+    image = AWSResource.objects.filter(
         profile=profile,
         region=region,
         resource_type="image",
         name__contains="-%s-%s-"%(module_name, version)
-    )
+    ).last()
     return image
 
 
@@ -651,7 +651,7 @@ def kick_devices(request, plan_id, step_id):
             break
         else:
             connectors_to_kick.append(connector)
-    
+
     # Display connectors that are to be deregistered:
     ret = ""
     #ret += elb_names

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles %}
+    <title>Title</title>
+    <style>
+
+        td {
+            white-space: nowrap;
+        }
+
+        th {
+            white-space: nowrap;
+        }
+
+        pre {
+            outline: 1px solid #ccc;
+            padding: 5px;
+            margin: 5px;
+            font-size: small;
+            font-family: Consolas, Calibri, monospace;
+        }
+
+        .string {
+            color: green;
+        }
+
+        .number {
+            color: darkorange;
+        }
+
+        .boolean {
+            color: blue;
+        }
+
+        .null {
+            color: magenta;
+        }
+
+        .key {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+{% for cluster_name,cluster_detail_dict in update_result_dict.items %}
+    <table width="50%" border="1" cellspacing="0" cellpadding="2" style="text-align:center; font-size: small; font-family: Consolas, Calibri, monospace;">
+        <thead style="background:#c6efce">
+        <tr>
+            <th colspan="7">{{ cluster_name }}( {{ cluster_detail_dict.from_version }}
+                -- {{ cluster_detail_dict.to_version }} )
+            </th>
+        </tr>
+        <tr>
+            <th>区域</th>
+            <th>当前版本</th>
+            <th>更新版本</th>
+            <th>更新结果</th>
+            <th>更新内容</th>
+            <th>变更Diff(删除)</th>
+            <th>变更Diff(新增)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for region, version_detail_list in cluster_detail_dict.region_details.items %}
+            <tr>
+                <td rowspan={{ version_detail_list | length }}>{{ region }}</td>
+                <td>{{ version_detail_list.0.current_version }}</td>
+                <td>{{ version_detail_list.0.update_version }}</td>
+                <td>
+                    {% if version_detail_list.0.result == 'success' %}
+                        <span style="font-weight:bold;color: #0BA925">SUCCESS</span>
+                    {% else %}
+                        <span style="font-weight:bold;color: #fb0000">FAILED</span>
+                    {% endif %}
+                </td>
+                <td align="left">
+                    <pre>{{ version_detail_list.0.update_content }}</pre>
+                </td>
+                <td align="left">
+                    <pre>{{ version_detail_list.0.symmetric_diff_result_discard |safe }}</pre>
+                </td>
+                <td align="left">
+                    <pre>{{ version_detail_list.0.symmetric_diff_result_add |safe }}</pre>
+                </td>
+            </tr>
+
+            {% for version_detail in version_detail_list|slice:"1:" %}
+                <tr>
+                    <td>{{ version_detail.current_version }}</td>
+                    <td>{{ version_detail.update_version }}</td>
+                    <td>
+                        {% if version_detail.result  == 'success' %}
+                            <span style="font-weight:bold;color: #0BA925">SUCCESS</span>
+                        {% else %}
+                            <span style="font-weight:bold;color: #fb0000">FAILED</span>
+                        {% endif %}
+                    </td>
+                    <td align="left">
+                        <pre>{{ version_detail.update_content |safe }}</pre>
+                    </td>
+                    <td align="left">
+                        <pre>{{ version_detail.symmetric_diff_result_discard | safe }}</pre>
+                    </td>
+                    <td align="left">
+                        <pre>{{ version_detail.symmetric_diff_result_add | safe }}</pre>
+                    </td>
+                </tr>
+            {% endfor %}
+
+        {% endfor %}
+        </tbody>
+    </table>
+{% endfor %}
+
+<script>
+    function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+            json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+</script>
+
+</body>
+</html>

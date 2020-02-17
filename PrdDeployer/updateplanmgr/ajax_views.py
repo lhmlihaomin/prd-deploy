@@ -224,8 +224,13 @@ def stop_module_previous_ec2(request):
         update_step = step,
         action = "stop_module_previous_ec2"
     )
+    module = step.module
+    module = module.previous_module
 
     # data check:
+    if module.healthy_instance_count >= module.instance_count:
+        step.ec2_launched = True
+
     if not step.ec2_launched:
         return JSONResponse((False, "New version not launched, cannot stop old version."))
     if not step.elb_registered:
@@ -234,8 +239,6 @@ def stop_module_previous_ec2(request):
         return JSONResponse((False, "Old version instances not deregistered from ELBs, cannot stop."))
     if step.finished:
         return JSONResponse(False)
-    module = step.module
-    module = module.previous_module
     instances = module.instances.all()
     # EC2Instance database ids:
     ids = [str(instance.id) for instance in instances]
@@ -261,7 +264,7 @@ def stop_module_previous_ec2(request):
     except:
         actionlog.set_result(False, json.dumps(ids))
         actionlog.save()
-        return JSONResponse(False)    
+        return JSONResponse(False)
     actionlog.set_result(True, json.dumps(ids))
     actionlog.save()
     return JSONResponse(True)
@@ -292,7 +295,7 @@ def reg_module_elb(request):
         actionlog.set_result(False, "Step already finished.")
         actionlog.save()
         return JSONResponse(False)
-    
+
     session = module.profile.get_session(module.region)
     ec2res = session.resource('ec2')
     elbclient = session.client('elb')
@@ -463,7 +466,7 @@ def deregister_connectors(request):
     ids = request.POST.getlist('ids[]')
     instances = EC2Instance.objects.filter(id__in=ids)
     param_instance_ids = [{'InstanceId': i.instance_id} for i in instances]
-    
+
     session = step.module.profile.get_session(step.module.region)
     elb = session.client('elb')
 
@@ -474,7 +477,7 @@ def deregister_connectors(request):
         )
 
     return JSONResponse([step_id, elb_names, ids])
-    
+
 
 
 
@@ -510,4 +513,4 @@ def init_connector_close_all(request):
 def dereg_connectors_from_lbs(request):
     ids = request.POST.getlist('ids[]')
     instances = EC2Instance.objects.filter(id__in=ids)
-    
+

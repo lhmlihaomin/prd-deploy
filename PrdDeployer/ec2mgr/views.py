@@ -206,7 +206,7 @@ def retired_instances(request):
         for instance in instances:
             print("Terminating "+instance.name)
         # TODO: Terminate instances here.
-        return HttpResponse("POSTed")
+        return HttpResponse(" ".join([instance.instance_id for instance in instances]))
 
     # handle GET request:
     if 'profile_name' in request.GET:
